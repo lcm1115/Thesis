@@ -9,7 +9,6 @@
 \date{\today}
 
 \begin{document}
-\nocite{*}
 \maketitle
 
 \section{Problem Description}
@@ -31,15 +30,15 @@ protocol~\cite{Miers13}.
 
 The overall goal of this thesis is to answer the following questions:
 \begin{itemize}[leftmargin=.5in]
+    \item What is the degree of anonymity present in current cryptocurrency theory?
     \item What is the degree of anonymity present in current cryptocurrency implementations?
     \item Can anonymity be added to existing cryptocurrencies while still being computationally feasible?
-    \item What would be the social implications of total anonymity in cryptocurrencies?
 \end{itemize}
 
 \section{Importance of Research}
 One of the biggest motivations to using cryptocurrencies over traditional
 currencies is to minimize government interference. However, much like the
-government aims to track the movement of wealth (such as with income), it is the
+government aims to track the movement of wealth (such as with income), it is
 in the government's interest to track the movement of wealth in the form of
 cryptocurrencies. Additionally, with a market cap of roughly 7 billion USD in
 the case of Bitcoin, the cryptocurrency community is sure to fall under heavy
@@ -63,7 +62,7 @@ cryptocurrencies, the implications would be significant.
 Researchers at Johns Hopkins University have already created a protocol to add
 anonymity to Bitcoin called Zerocoin~\cite{Miers13}. The main issue is
 that the proposed solutions (3072-bit accumulators) are computationally very
-expensive. What we would like to do is to examine this particular implementation,
+expensive. What we would like to do is to examine the Zerocoin proposal,
 as well as any other similar attempts that have been made, and see how
 computationally feasible they are.
 
@@ -90,11 +89,10 @@ The ideal possible outcome is that we find a way of adding more anonymity to an
 existing cryptocurrency protocol, or improve the performance of an existing
 method of adding anonymity to a cryptocurrency protocol. In the case of adding
 a new form of anonymity to cryptocurrencies, the main
-benefit is that we can now either substitute this extension in for other
+benefit is that we can now either substitute this extension for other
 extensions, or perhaps even add it to a cryptocurrency in addition to another
-extension. In the case of performance improvements, we can now layer these
-extensions on top of existing protocols and perhaps even have this usage widely
-distributed such that these protocols become purely anonymous.
+extension. In the case of performance improvements, we can now potentially layer these
+extensions on top of existing protocols with minimal overhead.
 
 In this thesis we are not concered with any business, legal, or social
 implications of cryptocurrency anonymity. We are purely concerned with
