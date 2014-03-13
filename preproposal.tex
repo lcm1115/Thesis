@@ -1,0 +1,108 @@
+\documentclass[11pt]{artikel3}
+
+\usepackage{cite, enumitem, fullpage, setspace, graphicx}
+\usepackage[margin=.9in]{geometry}
+\usepackage{times}
+
+\title{RIT Department of Computer Science\\MS Thesis Preproposal:\\\emph{Anonymity Analysis of Cryptocurrencies}}
+\author{Liam Morris\\Thesis Chair: Stanis{\l}aw Radziszowski}
+\date{\today}
+
+\begin{document}
+\nocite{*}
+\maketitle
+
+\section{Problem Description}
+A cryptocurrency is a digital currency backed by mathematics and
+cryptography, compared to traditional fiat money which was traditionally backed by gold
+or silver. The foundation of many cryptocurrencies is based on a key derivation
+scheme known as scrypt~\cite{Percival}.
+Cryptocurrencies, such as Bitcoin~\cite{Nakamoto08}, provide a means of having a
+decentralized, distributed, peer-to-peer electronic cash system. These protocols
+supposedly provide some level of anonymity, such that transactions and tender
+cannot be directly associated with specific individuals. However, given the
+technical specification of Bitcoin, this anonymity may not exist as stated.
+
+In this thesis we will aim to analyze the technical implementations of Bitcoin and
+other cryptocurrencies to determine the level of anonymity provided by these protocols. We will
+also aim to research some improvements that have already been proposed, such as
+the Zerocoin protocol which adds an extra layer of anonymity over the Bitcoin
+protocol~\cite{Miers13}.
+
+The overall goal of this thesis is to answer the following questions:
+\begin{itemize}[leftmargin=.5in]
+    \item What is the degree of anonymity present in current cryptocurrency implementations?
+    \item Can anonymity be added to existing cryptocurrencies while still being computationally feasible?
+    \item What would be the social implications of total anonymity in cryptocurrencies?
+\end{itemize}
+
+\section{Importance of Research}
+One of the biggest motivations to using cryptocurrencies over traditional
+currencies is to minimize government interference. However, much like the
+government aims to track the movement of wealth (such as with income), it is the
+in the government's interest to track the movement of wealth in the form of
+cryptocurrencies. Additionally, with a market cap of roughly 7 billion USD in
+the case of Bitcoin, the cryptocurrency community is sure to fall under heavy
+financial scrutiny. Due to the nature of these protocols, the distributed
+transaction record contains information about all transfers that have ever
+occurred, making such scrutiny possible. Even further, these transfers are not
+purely anonymous, but are instead saved in the public transaction record as a
+transfer between two or more specific addresses. This method of record-keeping
+is psuedonymous rather than anonymous.
+
+The concept of total anonymity seems to be in line with the motivations of the
+cryptocurrency communities. With total anonymity, the government has even less
+influence over the community, such as in the form of taxation. If transactions
+cannot be associated with someone, even at the psuedonym level, that person
+cannot be taxed for those transactions. From the perspective of the
+cryptocurrency communities, the importance of this research is to determine if
+such a thing is possible and feasible. If such functionality could be added to
+cryptocurrencies, the implications would be significant.
+
+\section{Related Work}
+Researchers at Johns Hopkins University have already created a protocol to add
+anonymity to Bitcoin called Zerocoin~\cite{Miers13}. The main issue is
+that the proposed solutions (3072-bit accumulators) are computationally very
+expensive. What we would like to do is to examine this particular implementation,
+as well as any other similar attempts that have been made, and see how
+computationally feasible they are.
+
+\section{Methodology}
+The first steps will be recording performance data on base implementations of
+cryptocurrencies. Once this has been completed, proposed extensions to improve
+anonymity will be implemented on top of these systems. We will then record
+performance again to have a baseline comparison between the base systems and the
+systems with the extensions layered on top. From here, we will then attempt to
+optimize the systems either by optimizing what we have implemented with generic
+code optimizations, or by replacing entire components of the systems. As an
+example, we could possibly replace components that depend on the integral discrete
+logarithm problem with components that depend on the elliptic curve discrete
+logarithm problem.
+
+When we have analyzed the performance of current proposals to add anonymity to
+cryptocurrencies, we will aim to propose our own extension of a cryptocurrency
+to improve anonymity based on the data we have collected. Our goal for this
+extension will be to provide some combination of improved anonymity over
+existing proposal and improved performance over existing proposals.
+
+\section{Potential Outcomes}
+The ideal possible outcome is that we find a way of adding more anonymity to an
+existing cryptocurrency protocol, or improve the performance of an existing
+method of adding anonymity to a cryptocurrency protocol. In the case of adding
+a new form of anonymity to cryptocurrencies, the main
+benefit is that we can now either substitute this extension in for other
+extensions, or perhaps even add it to a cryptocurrency in addition to another
+extension. In the case of performance improvements, we can now layer these
+extensions on top of existing protocols and perhaps even have this usage widely
+distributed such that these protocols become purely anonymous.
+
+In this thesis we are not concered with any business, legal, or social
+implications of cryptocurrency anonymity. We are purely concerned with
+computational possibility and feasibility of such concepts. For a paper
+analyzing such implications, refer to ``An analysis of anonymity in the bitcoin
+system''~\cite{Reid11}.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}
