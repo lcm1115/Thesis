@@ -9,6 +9,7 @@
 \usepackage[margin=1.5in]{geometry}
 \usepackage{graphicx}
 \usepackage{setspace}
+\usepackage{tabularx}
 \usepackage{url}
 
 \bibliographystyle{acm}
@@ -57,7 +58,6 @@ feasibility.
 \tableofcontents
 \listoffigures
 \pagebreak
-\addtocounter{footnote}{-1}
 \section{Problem Statement}
 A cryptocurrency is a digital currency backed by mathematics and
 cryptography, compared to traditional fiat money which was traditionally backed by gold
@@ -99,8 +99,8 @@ B is as follows:
 \end{enumerate}
 \end{minipage}
 \begin{figure}[H]
-    \caption{Bitcoin transaction process~\cite{nakamoto08}}
     \centering
+    \caption[Bitcoin transaction process]{Bitcoin transaction process~\cite{nakamoto08}}
     \includegraphics{figures/transaction.png}
 \end{figure}
 
@@ -118,7 +118,6 @@ SHA-256 hash with inputs of the previous hash and some nonce must be found such
 that the resulting hash is below some difficulty level. In other words, we must
 feed the SHA-256 algorithm the previous hash of the coin concatenated with some
 nonce such that we have a specified number of leading 0's in the resulting hash.
-
 One common way of computing proof-of-work is using the following algorithm:
 \begin{algorithm}[H]
     \KwIn{$D$ = difficulty parameter, $P$ = previous transaction hash}
@@ -324,7 +323,7 @@ users, Bitcoin mix services mix transactions to anonymize the users, frequently
 charging some sort of processing fee for the service.
 
 \begin{figure}[H]
-    \caption{Example mix network\protect\footnotemark}
+    \caption[Example mix network]{Example mix network\protect\footnotemark}
     \centering
     \includegraphics[width=.8\linewidth]{figures/mix.png}
 \end{figure}
@@ -343,7 +342,8 @@ output, which allows for connections to be drawn across the mixing operations.
 This imperfect anonymization is present in other mixers, as in another study it
 was observed that Bitcoin Laundry took input transactions and directly fed them
 to output transactions, effectively eliminating the purpose of the
-service~\cite{meiklejohn13}.
+service~\cite{meiklejohn13}. The possible cause for this is that the pool of
+users in the service is to small to sufficiently anonymize transactions.
 
 One of the primary issues in using these mixing or laundry services is that
 trust must be placed in the service, which is not an ideal scenario given that
@@ -355,15 +355,133 @@ suggests that there is a desire for a system to provide anonymity without the
 need to place trust in some sort of central figure.
 
 \subsubsection{Zerocoin}
-There exists a proposal to add an additional layer of anonymity to the Bitcoin
-protocol known as Zerocoin~\cite{miers13}.
+In 2013, researchers at Johns Hopkins University proposed an extension to
+improve Bitcoin's anonymity known as Zerocoin~\cite{miers13}. The group claims
+that Zerocoin ``uses standard cryptographic assumptions and does not introduce
+new trusted parties or otherwise change the security model of Bitcoin.'' The
+basic idea is to add newly minted coins to an accumulator, and then with the
+assistance of zero-knowledge proofs spend the coins from the accumulator without
+revealing a user's identity.
+
+The Zerocoin protocol essentially creates a currency within Bitcoin. To mint
+zerocoins, a user adds his bitcoins to the Zerocoin accumulator and receives
+serial numbers in return, which correspond to the zerocoins that were "minted."
+To later redeem the coins, the user must initiate a "Zerocoin Spend" transaction
+and specify an output Bitcoin address. Upon verification of the bitcoins'
+presence in the accumulator, done through a zero-knowledge proof, the
+corresponding bitcoin value is sent to the specified output address.
+
+\begin{figure}[H]
+    \centering
+    \caption[Bitcoin block chain (a) and Zerocoin block chain(b)]{Bitcoin block
+        chain (a) and Zerocoin block chain (b)~\cite{miers13}}
+    \includegraphics[width=\linewidth]{figures/zerocoin.png}
+\end{figure}
+
+This system creates anonymity by pooling all users' bitcoins together, and then
+allowing for redemption of a random set of bitcoins from the pool, as long as
+the user can prove that the bitcoins exist in the pool. In a sense, this is
+analogous to a mixing service, but there is no requirement to place trust in any
+figure, as the system is provably secure under certain cryptographic
+assumptions.
+
 \subsubsection{Mixcoin}
-Another extension to add anonymity to the current Bitcoin protocol has been
-proposed under the name of Mixcoin~\cite{bonneau14}.
+In 2014, another extension to improve anonymity in current Bitcoin protocol
+was been proposed under the name of Mixcoin~\cite{bonneau14}. This protocol
+describes a method of establishing mixing services with some concept of
+warranty, rather than modifying the Bitcoin protocol itself.
+
+In general, sufficiently large mixing services do an acceptable job at providing
+anonymity to users. However, these services have an inherent risk in that users
+must entrust the service with their bitcoins in order to utilize the service.
+If a mixing service steals a user's bitcoins, there is no way to prove that the
+theft occurred. Mixcoin's goal is to address this issue by proposing a
+construction for a mixing service that has built-in accountability.
+
+The basic process behind Mixcoin is that before any mixing occurs, a user Alice
+contacts the mix service and declares the following
+parameters~\cite{bonneau14}:\\
+\begin{tabular}{cl}
+    $v$ & the value (chunk size) to be mixed\\
+    $t_1$ & the deadline by which Alice must send funds to the mix\\
+    $t_2$ & the deadline by which the mix must return funds to Alice\\
+    $\kappa_{out}$ & the address where Alice wishes to transfer her funds\\
+    $\rho$ & the mixing fee rate Alice will pay\\
+    $n$ & a nonce, used to pay randomized mixing fees\\
+    $w$ & the number of blocks the mix requires to confirm Alice's payment
+\end{tabular}\vspace{1em}\\
+Once the mix accepts the terms of the mix, a new escrow address $\kappa_{esc}$
+is generated. All parameters plus $\kappa_{esc}$ are returned to Alice, signed
+by the mixing service. This allows Alice to publicly claim with certainty that
+the mixing service has stolen her funds in the event of theft, or in the case
+that the funds have not been delivered to $\kappa_{out}$ by $t_2$.
 
 \section{Proposed Work}
+The first part of research will consist of continued analysis of existing
+research into cryptocurrency anonymity as well as existing proposals to address
+cryptocurrency anonymity. It is clear that a great deal of attention has already
+been directed towards the anonymity of the Bitcoin protocol, but similar
+research and analysis has not been performed on other cryptocurrencies, such as
+Litecoin.
+
+We will investigate anonymity concerns of other cryptocurrency protocols and
+determine if there are parallels with the Bitcoin community. If this is the
+case, we will see what attempts (if any) have been made to address privacy
+issues, as well as see if proposals to anonymize Bitcoin can be applied these
+cryptocurrencies. Additionally, research that has been performed on the Bitcoin
+transaction graph, such as identifying entities based on transaction inputs,
+will be performed on the transaction graphs of other cryptocurrencies.
+
+After researching current implementations and proposals it is important to
+determine their feasibility. Indeed, one of the main goals of this thesis is to
+analyze the computational overhead required to add anonymity to
+cryptocurrencies. This may require implementing these protocols through software
+if no software implementations already exist. Once we have an implementation of
+these systems, we will conduct performance benchmarking to determine the
+computational complexity present in the protocols.
+
+The ideal outcome of this work is that one or more of these systems can be
+implemented with minimal computational cost. However, in the case that the base
+systems are not computationally feasible, we will perform more in-depth research
+into possible improvements that can be made to specific algorithms to improve
+performance while maintaining the same overall functionality. It is possible
+that such changes could be significant enough to warrant a formal writeup of a
+new protocol, but this would be an accidental side-effect and not one of our
+primary goals.
 
 \section{Deliverables}
+Upon completion of all proposed work, a thesis report will be submitted.
+Contained in this thesis will be all background research, experiment results,
+and any other required documentation. Additionally, the following software will
+be submitted:
+\begin{itemize}
+    \item Libraries for any cryptocurrency extensions that are implemented
+    \item Library for performing benchmarks on cryptocurrency systems
+\end{itemize}
+
+\section{Timeline}
+The writing of the thesis, software implementation, and research will all be
+done in parallel. A proposed schedule is as follows:
+\begin{center}
+\begin{tabularx}{\textwidth}{l|l}
+    Date & Task\\
+    \hline
+    April 25, 2014 & Complete thesis proposal submission\\
+    May 16, 2014 & Perform block chain analysis on Litecoin\\
+    May 2014 -- August 2014 & \emph{Summer Co-op}\footnote{Research will
+                              continue, but there is no formal timeline for
+                              this period of time}\\
+    September 5, 2014 & Finish required background research, begin software
+                        implementation\\
+    September 19, 2014 & Finish software implementation, begin benchmarking and
+                         recording data\\
+    October 3, 2014 & Complete data analysis, revisit software implementation
+                      for optimizations\\
+    October 17, 2014 & Benchmark optimizations and record changes\\
+    November 14, 2014 & Finish Thesis Report\\
+    December 12, 2014 & Defend Thesis\\
+\end{tabularx}
+\end{center}
 
 \bibliography{references}
 
