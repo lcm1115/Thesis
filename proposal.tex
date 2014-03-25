@@ -3,23 +3,30 @@
 \usepackage{algorithm2e}
 \usepackage[english]{babel}
 \usepackage{cite}
-\usepackage[top=1in,bottom=1in,left=.75in,right=.75in]{geometry}
+\usepackage{float}
+\usepackage[margin=1.5in]{geometry}
 \usepackage{graphicx}
+\usepackage{setspace}
 \usepackage{url}
 
 \bibliographystyle{acm}
 
-\graphicspath{ {figures} }
+\graphicspath{{figures}}
+
+\onehalfspacing
 
 \begin{document}
-\nocite{*}
 \begin{titlepage}
-\title{Anonymity Analysis of Cryptocurrencies: Master's Thesis Proposal}
+\title{Anonymity Analysis of Cryptocurrencies}
 \author{Liam Morris \\
-  \multicolumn{1}{p{.7\textwidth}}{\centering
-  {\tt lcm1115@rit.edu} \\
-  \emph{Department of Computer Science, \\
-  Rochester Institute of Technology, Rochester, New York}\\\vspace{4em}
+  \multicolumn{1}{p{.8\textwidth}}{\centering
+  \begin{small}
+  Department of Computer Science\\
+  Rochester Institute of Technology\\
+  Rochester, New York 14623 USA\\
+  \end{small}
+  {\tt lcm1115@rit.edu}\\\vspace{2em}
+  \emph{Master's Thesis Proposal}\\\vspace{2em}
   Chair: Professor Stanis{\l}aw Radziszowski\hfill{\tt spr@cs.rit.edu}\\\vspace{1em}
   \hrulefill\\\vspace{1em}
   Reader: Professor Warren Carithers\hfill{\tt wrc@cs.rit.edu}\\\vspace{1em}
@@ -27,7 +34,7 @@
 \date{March 3, 2013}
 \end{titlepage}
 \maketitle
-\vspace{6em}
+\vfill
 \begin{abstract}
 A cryptocurrency is a form of electronic cash backed by mathematical and
 cryptographical constructs, unlike traditional currency which was historically
@@ -39,8 +46,8 @@ protocols, and the fact that transactions are psuedonymous and not purely
 anonymous, this supposed anonymity may not exist. In this thesis we aim to
 analyze the technical implementations of Bitcoin and other cryptocurrencies to
 determine the level of anonymity provided by these protocols. We also aim to
-research some improvements that have already been proposed to determine the
-feasibility of such proposals.
+research some improvements that have already been proposed to determine their
+feasibility.
 \end{abstract}
 \thispagestyle{empty}
 \clearpage
@@ -52,8 +59,8 @@ feasibility of such proposals.
 A cryptocurrency is a digital currency backed by mathematics and
 cryptography, compared to traditional fiat money which was traditionally backed by gold
 or silver. The foundation of many cryptocurrencies is based on a key derivation
-scheme known as scrypt~\cite{Percival}.
-Cryptocurrencies, such as Bitcoin~\cite{Nakamoto08}, provide a means of having a
+scheme known as scrypt~\cite{percival09}.
+Cryptocurrencies, such as Bitcoin~\cite{nakamoto08}, provide a means of having a
 decentralized, distributed, peer-to-peer electronic cash system. These protocols
 supposedly provide some level of anonymity, such that transactions and tender
 cannot be directly associated with specific individuals. However, given the
@@ -62,7 +69,7 @@ as stated.
 
 \section{Cryptocurrency Protocols}
 Cryptocurrency protocols generally consist of three main components: a
-transaction scheme, a verification scheme, and a block chain. The specific
+transaction scheme, a verification scheme, and a transaction ledger. The specific
 details for each of these may vary between protocols, but they typically exhibit
 the same characteristics regardless of specific implementation.
 
@@ -74,7 +81,9 @@ so the Bitcoin protocol will be our primary focus.
 \subsubsection{Transaction Scheme}
 The transaction scheme of Bitcoin uses psuedonyms to specify a transaction
 between users on the network. A transaction is recorded as a transfer of some
-value from one or more signatures to another signature. 
+value from one or more signatures to another signature.
+
+\begin{minipage}{\linewidth}
 The method of recording a new transaction of some bitcoin from User A to User
 B is as follows:
 \begin{enumerate}
@@ -82,10 +91,12 @@ B is as follows:
         A's private key
     \item The resulting value is used as an input in a hash function along
         with User B's public key
-    \item The output of this hash is the transaction signature
+    \item The output of this hash is the transaction signature, which can be
+        signed with User B's private key to initiate another transaction
 \end{enumerate}
-\begin{figure}[h]
-    \caption{Bitcoin transaction process~\cite{Nakamoto08}}
+\end{minipage}
+\begin{figure}[H]
+    \caption{Bitcoin transaction process~\cite{nakamoto08}}
     \centering
         \includegraphics{figures/transaction.png}
 \end{figure}
@@ -98,7 +109,7 @@ Once a transaction has been initiated, it must be verified by users in the
 Bitcoin network in order for the transaction to be fully committed. Verification
 of a transaction requires some proof-of-work in order to complete the block and
 append it to the block chain. The proof-of-work scheme used by the Bitcoin
-protocol is based on the Hashcash proof-of-work scheme~\cite{hashcash}. 
+protocol is based on the Hashcash proof-of-work scheme~\cite{back02}. 
 To complete proof-of-work for some transaction, a
 SHA-256 hash with inputs of the previous hash and some nonce must be found such
 that the resulting hash is below some difficulty level. In other words, we must
@@ -106,7 +117,7 @@ feed the SHA-256 algorithm the previous hash of the coin concatenated with some
 nonce such that we have a specified number of leading 0's in the resulting hash.
 
 One common way of computing proof-of-work is using the following algorithm:
-\begin{algorithm}
+\begin{algorithm}[H]
     \KwIn{$D$ = difficulty parameter, $P$ = previous transaction hash}
     \KwOut{nonce, resulting hash}
     $N \gets 0$\\
@@ -116,7 +127,7 @@ One common way of computing proof-of-work is using the following algorithm:
         $H \gets ${\sc SHA-256($P + N$)}
     }
     \Return{N, H}
-\end{algorithm}
+\end{algorithm}\vspace{1em}
 
 Once a proof-of-work has been determined, the block with the proof-of-work
 information is distributed to the Bitcoin network. The difficulty of the
@@ -124,7 +135,7 @@ proof-of-work operation is such that blocks are found for a transaction, on
 average, in 10 minutes.
 
 \subsubsection{Network Structure}
-The original Bitcoin whitepaper~\cite{Nakamoto08} describes the Bitcoin network in the following
+The original Bitcoin whitepaper~\cite{nakamoto08} describes the Bitcoin network in the following
 way:
 \begin{enumerate}
     \item Transactions are broadcast to all network nodes.
@@ -144,11 +155,13 @@ verified transactions, and accepted blocks. In this way, the transaction record
 Litecoin is one of the most widely used cryptocurrencies, and is itself a fork
 of Bitcoin. The primary difference between Litecoin and Bitcoin is how the coins
 are mined, or rather how the transactions are verified. Litecoin aims to have
-transactions confirm faster, as well as reduce the benefit of special purpose
-hardware for mining coins~\cite{survey}.
+transactions confirm faster with an average time of 2.5 minutes, as well as
+reduce the benefit of special purpose hardware for mining coins~\cite{ahamad13}.
+Although Litecoin is itself a fork of Bitcoin, many forks of Litecoin have been
+created, so Litecoin is worth some analysis.
 
 \subsubsection{Transaction Scheme}
-The Litecoin network method of transaction history is identical to that of
+The Litecoin transaction scheme is identical to that of
 Bitcoin. Litecoin also records the signatures of all users involved, the amount
 being transferred, etc.\ in a block, which is then itself part of a larger block
 chain.
@@ -162,7 +175,7 @@ this, Litecoin uses the scrypt hashing scheme instead of SHA-256, which changes
 the hashing scheme from a CPU-bound operation to a memory-bound operation. By
 changing the verification problem from a CPU-hard to memory-hard problem,
 parallelization no longer improves the speed of solving the
-problem~\cite{Percival}. This yields the following Litecoin proof-of-work
+problem~\cite{percival09}. This yields the following Litecoin proof-of-work
 algorithm:
 \begin{algorithm}
     \KwIn{$D$ = difficulty parameter, $P$ = previous transaction hash}
@@ -177,15 +190,137 @@ algorithm:
 \end{algorithm}
 
 \subsubsection{Network Structure}
+The network structure of Litecoin, much like the transaction scheme, is
+virtually identical to that of Bitcoin. The network nodes are users connected to
+the network, who receive notifications of new transactions and verified
+transactions.
 
-\subsubsection{Anonymity}
-Each transaction contains identifying information with regards to the addresses
+\subsection{Current State of Anonymity}
+Users in the Bitcoin community can be falsely led to the conclusion that their
+transactions are purely anonymous. For example, WikiLeaks accepts bitcoin
+donations, stating that\footnote{\url{http://shop.wikileaks.org/donate} --
+Accessed: 3-25-14}
+\begin{quote}
+``Bitcoin is a secure and anonymous digital currency. Bitcoins cannot be easily
+tracked back to you, and are safer and faster alternative to other donation
+methods.''
+\end{quote}
+This quote was published in 2011, yet still remains as stated on the WikiLeaks
+website as of March 2014 despite some criticism of its accuracy.
+
+Each transaction contains identifying information with respect to the addresses
 of the users. For every transaction in the block chain, we can see between which
 users the transaction occurred, as well as the number of bitcoins transferred.
-In fact, we can make use of a utility such as~\url{http://blockchain.info} to
-search by address to see all transactions that a specific user has made.
+Each of these transactions exists in the public transaction record to defend
+against double spending of bitcoins. Due to the public nature of this record and
+the information associated with each transaction, it is possible to deduce some
+information about users on the network.
+
+One way to deduce information about users is based on the input addresses into a
+transaction. Since the private key owning a bitcoin is required to initiate a
+transaction of that bitcoin, then we can safely assume that in a transaction
+that contains multiple input addresses, that those addresses belong to one
+entity or person. The other possible scenario is that private keys were shared,
+but this is an unlikely scenario. In fact, in the original Bitcoin whitepaper,
+Nakamoto states~\cite{nakamoto08},
+\begin{quote}
+``Some linking is still unavoidable with multi-input
+transactions, which necessarily reveal that their inputs were owned by the same
+owner.''
+\end{quote}
+
+Much research has been done in this area already. In 2011, Reid and Harrigan
+analyzed one specific case of a theft of 25,000 BTC and attempted to trace the
+stolen BTC through the Bitcoin network~\cite{reid11}. One of the important
+results from this study was that it was not extraordinarily difficult to follow
+the transfer of bitcoins between entities. The two were able to successfully
+trace the stolen bitcoins across many transfers and determine some specific
+addresses to which the coins were transferred, such as LulzSec.
+
+One way in which Nakamoto addresses this is suggesting that public keys be kept
+anonymous. However, this is not always ideal or even practical. Many users
+publish their public keys in forum signatures so that they may receive bitcoins.
+In this case, the public key is then very obviously associated with that
+specific username, and passive analysis of multi-input transactions can possibly
+reveal other keys associated with that user. Even if users do not publish their
+keys in this way, some association may be revealed if a user takes advantage of
+services or stores that accept bitcoins. Consider the case of a user wanting to
+exchange her bitcoins for some form of currency. To do so, she must go through
+some Bitcoin exchange service, in which she necessarily reveals some personally
+identifying information to be able to receive her money. She has now placed her
+anonymity in the hands of the exchange, since if the exchange is compromised,
+her personal information is now compromised as well.
+
+In 2013, Ron and Shamir~\cite{ron13} performed analysis on the Bitcoin network
+using transaction size as their metric. First they performed similar analysis to
+Reid and Harrigan to build a graph of entities, and then analyzed large
+transactions to and from those entities. One of the first results from this
+analysis is that the two were able to easily identify a few key entities: Mt.
+Gox (the largest bitcoin exhange at the time, filed for bankruptcy February 28,
+2014), Instawallet (another large bitcoin exhange, shut down April 3rd, 2013),
+and DeepBit (the largest mining pool at the time).
+
+Another key result determined
+from this analysis is the transaction patterns that are commonly used to attempt
+to obscure a user's identity. The main activities identified by Ron and Shamir
+are long chains, fork-merge patterns, and savings accounts. The long chains of
+transactions begin as one or more large transactions, which are then split into
+many smaller transactions in a very long chain. Fork-merge patterns are similar,
+except that the smaller transactions are eventually merged back into one
+address. A large transaction gets split into multiple smaller transactions, but
+all bitcoins ultimately end up back at the originating address. The last
+activity observed was the use of Bitcoin "savings accounts." Bitcoins are
+distributed across many addresses, after which they are essentially untouched. A
+common pattern for all of these activities is splitting a transaction into equal
+parts, which are then also split into equal parts, etc. The resulting structure
+observed from this activity is akin to a binary tree.
+
+Researchers at University of California, San Diego and George Mason
+University~\cite{meiklejohn13} performed analysis on change addresses in a
+Bitcoin transaction. Meiklejohn et al.\ used the assumption that a one-time
+change address is controlled by the same user as the input addresses. Based on
+this assumption, the group was able to discover what they called "peeling
+chains," similar to activities observed by Ron and Shamir. This type of analysis
+was applied to a rather peculiar Bitcoin wallet\footnote{\tt
+1DkyBEKt5S2GDtv7aQw6rQepAvnsRyHoYM}, in which an extremely large Bitcoin wallet
+was split into several smaller wallets. These smaller wallets then eventually
+interacted with some Bitcoin services, including exchanges. If this wallet were
+associated with an entity such as the Silk Road or the Bitcoin Savings \& Trust
+Ponzi scheme~\cite{moore13}, the exchanges might be inclined to reveal
+identifying information about the user in question, ultimately eliminating any
+notion of anonymity.
+
+Using the result from these studies, we can clearly see that input addresses and
+change addresses can be used to identify Bitcoin "entities." We can also analyze
+these entities more closely and see how the entities try to obscure their
+identity. Since these sorts of patterns are not extraordinarily difficult to
+deduce from the Bitcoin block chain, one can imagine a scenario where some law
+enforcement agency might want to investigate a user who is a suspect in some
+sort of illict activity. We can determine a group of addresses that belong to
+the user, and if the user interacted with any sort of Bitcoin exchange or
+service, the law enforcement agency could potentially seize the personal
+information of the user form such a service. Even further, we can see all
+addresses with which the user interacted, which could implicate other users
+involved in illicit activities. This allows the law enforcement agency to
+closely analyze these users more closely, some of which may have interacted with
+a Bitcoin exchange, and so on.
+
+\subsection{Improving Anonymity}
+There have been many attempts to resolve the anonymity issues present in the
+Bitcoin protocol. These attempts may have arisen organically within the
+community or are theoretical proposals.
+\subsubsection{Mixer}
+A very common form of obscuring one's identity is to use a mixer or tumbler.
+\subsubsection{Zerocoin}
+There exists a proposal to add an additional layer of anonymity to the Bitcoin
+protocol known as Zerocoin~\cite{miers13}.
+\subsubsection{Mixcoin}
+Another extension to add anonymity to the current Bitcoin protocol has been
+proposed under the name of Mixcoin~\cite{bonneau14}.
 
 \section{Proposed Work}
+
+\section{Deliverables}
 
 \bibliography{references}
 
