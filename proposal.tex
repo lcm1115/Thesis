@@ -1,5 +1,7 @@
 \documentclass[11pt]{article}
 
+\newcommand{\Moser}{M{\"o}ser}
+
 \usepackage{algorithm2e}
 \usepackage[english]{babel}
 \usepackage{cite}
@@ -55,6 +57,7 @@ feasibility.
 \tableofcontents
 \listoffigures
 \pagebreak
+\addtocounter{footnote}{-1}
 \section{Problem Statement}
 A cryptocurrency is a digital currency backed by mathematics and
 cryptography, compared to traditional fiat money which was traditionally backed by gold
@@ -98,7 +101,7 @@ B is as follows:
 \begin{figure}[H]
     \caption{Bitcoin transaction process~\cite{nakamoto08}}
     \centering
-        \includegraphics{figures/transaction.png}
+    \includegraphics{figures/transaction.png}
 \end{figure}
 
 Once a transaction has been created, it is sent out to the Bitcoin network in
@@ -199,7 +202,7 @@ transactions.
 Users in the Bitcoin community can be falsely led to the conclusion that their
 transactions are purely anonymous. For example, WikiLeaks accepts bitcoin
 donations, stating that\footnote{\url{http://shop.wikileaks.org/donate} --
-Accessed: 3-25-14}
+Accessed: 3-25-14},
 \begin{quote}
 ``Bitcoin is a secure and anonymous digital currency. Bitcoins cannot be easily
 tracked back to you, and are safer and faster alternative to other donation
@@ -307,10 +310,50 @@ a Bitcoin exchange, and so on.
 
 \subsection{Improving Anonymity}
 There have been many attempts to resolve the anonymity issues present in the
-Bitcoin protocol. These attempts may have arisen organically within the
-community or are theoretical proposals.
+Bitcoin protocol. Some of these attempts have arisen organically within the
+Bitcoin community and are already in use, while others are proposed by academic
+papers and have yet to be implemented.
+
 \subsubsection{Mixer}
-A very common form of obscuring one's identity is to use a mixer or tumbler.
+A very common form of obscuring one's identity is to use a mixer or
+tumbler\footnote{This name comes from the devices used to clean physical coins.}.
+These services are based on mix networks~\cite{chaum81}, which are used to mask
+a user's identity within a network, such as the commonly used Tor network.
+However, unlike mix networks which are used to mix messages and anonymize the
+users, Bitcoin mix services mix transactions to anonymize the users, frequently
+charging some sort of processing fee for the service.
+
+\begin{figure}[H]
+    \caption{Example mix network\protect\footnotemark}
+    \centering
+    \includegraphics[width=.8\linewidth]{figures/mix.png}
+\end{figure}
+
+\footnotetext{\url{http://en.wikipedia.org/wiki/Mix_network} -- Accessed:
+3-25-14}
+
+Much work has been done to analyze the anonymity provided by these services.
+In 2013, \Moser et al.\ analyzed three popular mixing services: Blockchain.info,
+Bitcoin Fog, and BitLaundry~\cite{moser13}. The key results of this experiment
+were that Blockchain.info and Bitcoin Fog both used complex methods of
+distributed transactions that prevented the ability to discover any connection
+between input and output transactions, effectively anonymizing the traffic.
+BitLaundry, on the other hand, used direction connections between input and
+output, which allows for connections to be drawn across the mixing operations.
+This imperfect anonymization is present in other mixers, as in another study it
+was observed that Bitcoin Laundry took input transactions and directly fed them
+to output transactions, effectively eliminating the purpose of the
+service~\cite{meiklejohn13}.
+
+One of the primary issues in using these mixing or laundry services is that
+trust must be placed in the service, which is not an ideal scenario given that
+one of the goals of Bitcoin is to eliminate the requirement to place trust in
+individuals. It has even been observed that these services cannot necessarily be
+trusted, as Meiklejohn et al.\ reported that ``One of these, BitMix, simply
+stole our money.'' The presence of this behavior and the desire for anonymity
+suggests that there is a desire for a system to provide anonymity without the
+need to place trust in some sort of central figure.
+
 \subsubsection{Zerocoin}
 There exists a proposal to add an additional layer of anonymity to the Bitcoin
 protocol known as Zerocoin~\cite{miers13}.
