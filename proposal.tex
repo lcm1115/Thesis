@@ -44,8 +44,8 @@ cryptographical constructs, unlike traditional currency which was historically
 backed by gold or silver. Cryptocurrencies have seen rising popularity in recent
 years due to their decentralized, distributed, peer-to-peer protocols. Part of
 this rising popularity is also attributable to the supposed anonymity of these
-protocols. However, due to the public transaction history required for these
-protocols, and the fact that transactions are psuedonymous and not purely
+protocols; however, due to the public transaction history required for these
+protocols and the fact that transactions are psuedonymous and not purely
 anonymous, this supposed anonymity may not exist. In this thesis we aim to
 analyze the technical implementations of Bitcoin and other cryptocurrencies to
 determine the level of anonymity provided by these protocols. We also aim to
@@ -65,9 +65,9 @@ or silver. The foundation of many cryptocurrencies is based on a key derivation
 scheme known as scrypt~\cite{percival09}.
 Cryptocurrencies, such as Bitcoin~\cite{nakamoto08}, provide a means of having a
 decentralized, distributed, peer-to-peer electronic cash system. These protocols
-supposedly provide some level of anonymity, such that transactions and tender
-cannot be directly associated with specific individuals. However, given the
-technical specification of many cryptocurrencies, this anonymity may not exist
+supposedly provide some level of anonymity such that transactions and tender
+cannot be directly associated with specific individuals; however, given the
+technical specification of many cryptocurrencies this anonymity may not exist
 as stated.
 
 \section{Cryptocurrency Protocols}
@@ -104,11 +104,11 @@ B is as follows:
     \includegraphics{figures/transaction.png}
 \end{figure}
 
-Once a transaction has been created, it is sent out to the Bitcoin network in
+Once a transaction has been created it is sent out to the Bitcoin network in
 order to be verified.
 
 \subsubsection{Verification Scheme}
-Once a transaction has been initiated, it must be verified by users in the
+Once a transaction has been initiated it must be verified by users in the
 Bitcoin network in order for the transaction to be fully committed. Verification
 of a transaction requires some proof-of-work in order to complete the block and
 append it to the block chain. The proof-of-work scheme used by the Bitcoin
@@ -119,6 +119,7 @@ that the resulting hash is below some difficulty level. In other words, we must
 feed the SHA-256 algorithm the previous hash of the coin concatenated with some
 nonce such that we have a specified number of leading 0's in the resulting hash.
 One common way of computing proof-of-work is using the following algorithm:
+\vspace{1em}\\
 \begin{algorithm}[H]
     \KwIn{$D$ = difficulty parameter, $P$ = previous transaction hash}
     \KwOut{nonce, resulting hash}
@@ -131,7 +132,7 @@ One common way of computing proof-of-work is using the following algorithm:
     \Return{N, H}
 \end{algorithm}\vspace{1em}
 
-Once a proof-of-work has been determined, the block with the proof-of-work
+Once a proof-of-work has been determined the block with the proof-of-work
 information is distributed to the Bitcoin network. The difficulty of the
 proof-of-work operation is such that blocks are found for a transaction, on
 average, in 10 minutes.
@@ -142,15 +143,15 @@ way:
 \begin{enumerate}
     \item Transactions are broadcast to all network nodes.
     \item Transactions are collected and joined to form a block.
-    \item A proof-of-work for a block is found which is broadcast to all nodes.
+    \item A proof-of-work for a block is found, which is then broadcast to all nodes.
     \item If the proof-of-work is valid, all transactions in a block are valid,
-        and transactions have not already been spent, then block is accepted.
+        and transactions have not already been spent, then the block is accepted.
     \item The accepted block is appended to the block chain, and its hash is now
         used as the input hash for the next block.
 \end{enumerate}
 
 In other words, all nodes in the network are made aware of new transactions,
-verified transactions, and accepted blocks. In this way, the transaction record
+verified transactions, and accepted blocks. In this way the transaction record
 (block chain) is shared among all nodes in the network.
 
 \subsection{Litecoin Protocol}
@@ -165,15 +166,15 @@ created, so Litecoin is worth some analysis.
 \subsubsection{Transaction Scheme}
 The Litecoin transaction scheme is identical to that of
 Bitcoin. Litecoin also records the signatures of all users involved, the amount
-being transferred, etc.\ in a block, which is then itself part of a larger block
+being transferred in a block which is then itself part of a larger block
 chain.
 
 \subsubsection{Verification Scheme}
 Litecoin was forked from Bitcoin to address the strength that special purpose
 hardware brings to Bitcoin. Users in the Bitcoin network with application
-specific integrated circuits (ASIC) design specifically for computing SHA-256
+specific integrated circuits (ASIC) designed specifically for computing SHA-256
 hashes have an enormous advantage over users without such hardware. To address
-this, Litecoin uses the scrypt hashing scheme instead of SHA-256, which changes
+this Litecoin uses the scrypt hashing scheme instead of SHA-256, which changes
 the hashing scheme from a CPU-bound operation to a memory-bound operation. By
 changing the verification problem from a CPU-hard to memory-hard problem,
 parallelization no longer improves the speed of solving the
@@ -194,34 +195,34 @@ algorithm:
 \subsubsection{Network Structure}
 The network structure of Litecoin, much like the transaction scheme, is
 virtually identical to that of Bitcoin. The network nodes are users connected to
-the network, who receive notifications of new transactions and verified
+the network who receive notifications of new transactions and verified
 transactions.
 
 \subsection{Current State of Anonymity}
 Users in the Bitcoin community can be falsely led to the conclusion that their
 transactions are purely anonymous. For example, WikiLeaks accepts bitcoin
-donations, stating that\footnote{\url{http://shop.wikileaks.org/donate} --
+donations and states\footnote{\url{http://shop.wikileaks.org/donate} --
 Accessed: 3-25-14},
 \begin{quote}
 ``Bitcoin is a secure and anonymous digital currency. Bitcoins cannot be easily
 tracked back to you, and are safer and faster alternative to other donation
 methods.''
 \end{quote}
-This quote was published in 2011, yet still remains as stated on the WikiLeaks
+This quote was published in 2011 yet still remains as stated on the WikiLeaks
 website as of March 2014 despite some criticism of its accuracy.
 
 Each transaction contains identifying information with respect to the addresses
 of the users. For every transaction in the block chain, we can see between which
-users the transaction occurred, as well as the number of bitcoins transferred.
+users the transaction occurred as well as the number of bitcoins transferred.
 Each of these transactions exists in the public transaction record to defend
 against double spending of bitcoins. Due to the public nature of this record and
-the information associated with each transaction, it is possible to deduce some
+the information associated with each transaction it is possible to deduce some
 information about users on the network.
 
 One way to deduce information about users is based on the input addresses into a
 transaction. Since the private key owning a bitcoin is required to initiate a
-transaction of that bitcoin, then we can safely assume that in a transaction
-that contains multiple input addresses, that those addresses belong to one
+transaction of that bitcoin, we can safely assume that in a transaction
+with multiple input addresses that the addresses belong to one
 entity or person. The other possible scenario is that private keys were shared,
 but this is an unlikely scenario. In fact, in the original Bitcoin whitepaper,
 Nakamoto states~\cite{nakamoto08},
@@ -240,20 +241,20 @@ trace the stolen bitcoins across many transfers and determine some specific
 addresses to which the coins were transferred, such as LulzSec.
 
 One way in which Nakamoto addresses this is suggesting that public keys be kept
-anonymous. However, this is not always ideal or even practical. Many users
+anonymous; however, this is not always ideal or even practical. Many users
 publish their public keys in forum signatures so that they may receive bitcoins.
 In this case, the public key is then very obviously associated with that
-specific username, and passive analysis of multi-input transactions can possibly
+specific username and passive analysis of multi-input transactions can possibly
 reveal other keys associated with that user. Even if users do not publish their
 keys in this way, some association may be revealed if a user takes advantage of
 services or stores that accept bitcoins. Consider the case of a user wanting to
 exchange her bitcoins for some form of currency. To do so, she must go through
 some Bitcoin exchange service, in which she necessarily reveals some personally
 identifying information to be able to receive her money. She has now placed her
-anonymity in the hands of the exchange, since if the exchange is compromised,
-her personal information is now compromised as well.
+anonymity in the hands of the exchange, since if the exchange is compromised
+her personal information is also compromised.
 
-In 2013, Ron and Shamir~\cite{ron13} performed analysis on the Bitcoin network
+In 2013 Ron and Shamir~\cite{ron13} performed analysis on the Bitcoin network
 using transaction size as their metric. First they performed similar analysis to
 Reid and Harrigan to build a graph of entities, and then analyzed large
 transactions to and from those entities. One of the first results from this
@@ -266,13 +267,13 @@ Another key result determined
 from this analysis is the transaction patterns that are commonly used to attempt
 to obscure a user's identity. The main activities identified by Ron and Shamir
 are long chains, fork-merge patterns, and savings accounts. The long chains of
-transactions begin as one or more large transactions, which are then split into
+transactions begin as one or more large transactions which are then split into
 many smaller transactions in a very long chain. Fork-merge patterns are similar,
 except that the smaller transactions are eventually merged back into one
 address. A large transaction gets split into multiple smaller transactions, but
 all bitcoins ultimately end up back at the originating address. The last
-activity observed was the use of Bitcoin "savings accounts." Bitcoins are
-distributed across many addresses, after which they are essentially untouched. A
+activity observed was the use of Bitcoin ``savings accounts.'' Bitcoins are
+distributed across many addresses after which they are essentially untouched. A
 common pattern for all of these activities is splitting a transaction into equal
 parts, which are then also split into equal parts, etc. The resulting structure
 observed from this activity is akin to a binary tree.
@@ -281,10 +282,10 @@ Researchers at University of California, San Diego and George Mason
 University~\cite{meiklejohn13} performed analysis on change addresses in a
 Bitcoin transaction. Meiklejohn et al.\ used the assumption that a one-time
 change address is controlled by the same user as the input addresses. Based on
-this assumption, the group was able to discover what they called "peeling
-chains," similar to activities observed by Ron and Shamir. This type of analysis
-was applied to a rather peculiar Bitcoin wallet\footnote{\tt
-1DkyBEKt5S2GDtv7aQw6rQepAvnsRyHoYM}, in which an extremely large Bitcoin wallet
+this assumption, the group was able to discover what they called ``peeling
+chains,'' similar to activities observed by Ron and Shamir. This type of analysis
+was applied to a rather peculiar Bitcoin wallet\footnote{Address: {\tt
+1DkyBEKt5S2GDtv7aQw6rQepAvnsRyHoYM}}, in which an extremely large Bitcoin wallet
 was split into several smaller wallets. These smaller wallets then eventually
 interacted with some Bitcoin services, including exchanges. If this wallet were
 associated with an entity such as the Silk Road or the Bitcoin Savings \& Trust
@@ -292,16 +293,16 @@ Ponzi scheme~\cite{moore13}, the exchanges might be inclined to reveal
 identifying information about the user in question, ultimately eliminating any
 notion of anonymity.
 
-Using the result from these studies, we can clearly see that input addresses and
-change addresses can be used to identify Bitcoin "entities." We can also analyze
+Using the result from these studies we can clearly see that input addresses and
+change addresses can be used to identify Bitcoin ``entities.'' We can also analyze
 these entities more closely and see how the entities try to obscure their
 identity. Since these sorts of patterns are not extraordinarily difficult to
 deduce from the Bitcoin block chain, one can imagine a scenario where some law
 enforcement agency might want to investigate a user who is a suspect in some
-sort of illict activity. We can determine a group of addresses that belong to
-the user, and if the user interacted with any sort of Bitcoin exchange or
-service, the law enforcement agency could potentially seize the personal
-information of the user form such a service. Even further, we can see all
+sort of illicit activity. We can determine a group of addresses that belong to
+the user, and if any of those addresses interacted with a Bitcoin exchange or
+service, the law enforcement agency could seize the personal
+information of the user from such a service. Even further, we can see all
 addresses with which the user interacted, which could implicate other users
 involved in illicit activities. This allows the law enforcement agency to
 closely analyze these users more closely, some of which may have interacted with
@@ -318,7 +319,7 @@ A very common form of obscuring one's identity is to use a mixer or
 tumbler\footnote{This name comes from the devices used to clean physical coins.}.
 These services are based on mix networks~\cite{chaum81}, which are used to mask
 a user's identity within a network, such as the commonly used Tor network.
-However, unlike mix networks which are used to mix messages and anonymize the
+Unlike mix networks which are used to mix messages and anonymize the
 users, Bitcoin mix services mix transactions to anonymize the users, frequently
 charging some sort of processing fee for the service.
 
@@ -331,44 +332,44 @@ charging some sort of processing fee for the service.
 \footnotetext{\url{http://en.wikipedia.org/wiki/Mix_network} -- Accessed:
 3-25-14}
 
-Much work has been done to analyze the anonymity provided by these services.
+A great deal of work has been done to analyze the anonymity provided by these services.
 In 2013, \Moser et al.\ analyzed three popular mixing services: Blockchain.info,
 Bitcoin Fog, and BitLaundry~\cite{moser13}. The key results of this experiment
 were that Blockchain.info and Bitcoin Fog both used complex methods of
-distributed transactions that prevented the ability to discover any connection
+distributing transactions which eliminate the ability to discover any connection
 between input and output transactions, effectively anonymizing the traffic.
 BitLaundry, on the other hand, used direction connections between input and
-output, which allows for connections to be drawn across the mixing operations.
-This imperfect anonymization is present in other mixers, as in another study it
+output which allows for connections to be drawn across the mixing operations.
+This imperfect anonymization is present in other mixers. In another study it
 was observed that Bitcoin Laundry took input transactions and directly fed them
-to output transactions, effectively eliminating the purpose of the
+to output transactions effectively eliminating the purpose of the
 service~\cite{meiklejohn13}. The possible cause for this is that the pool of
 users in the service is to small to sufficiently anonymize transactions.
 
 One of the primary issues in using these mixing or laundry services is that
-trust must be placed in the service, which is not an ideal scenario given that
+trust must be placed in the service which is not an ideal scenario given that
 one of the goals of Bitcoin is to eliminate the requirement to place trust in
 individuals. It has even been observed that these services cannot necessarily be
 trusted, as Meiklejohn et al.\ reported that ``One of these, BitMix, simply
-stole our money.'' The presence of this behavior and the desire for anonymity
-suggests that there is a desire for a system to provide anonymity without the
-need to place trust in some sort of central figure.
+stole our money.''~\cite{meiklejohn13} The presence of this behavior and the
+desire for anonymity suggests that there is a desire for a system which provides
+anonymity without the need to place trust in some sort of central figure.
 
 \subsubsection{Zerocoin}
 In 2013, researchers at Johns Hopkins University proposed an extension to
 improve Bitcoin's anonymity known as Zerocoin~\cite{miers13}. The group claims
 that Zerocoin ``uses standard cryptographic assumptions and does not introduce
 new trusted parties or otherwise change the security model of Bitcoin.'' The
-basic idea is to add newly minted coins to an accumulator, and then with the
+basic idea is to add newly minted coins to an accumulator and then with the
 assistance of zero-knowledge proofs spend the coins from the accumulator without
 revealing a user's identity.
 
 The Zerocoin protocol essentially creates a currency within Bitcoin. To mint
 zerocoins, a user adds his bitcoins to the Zerocoin accumulator and receives
-serial numbers in return, which correspond to the zerocoins that were "minted."
-To later redeem the coins, the user must initiate a "Zerocoin Spend" transaction
+serial numbers in return, which correspond to the zerocoins that were ``minted.''
+To later redeem the coins, the user must initiate a ``Zerocoin Spend'' transaction
 and specify an output Bitcoin address. Upon verification of the bitcoins'
-presence in the accumulator, done through a zero-knowledge proof, the
+presence in the accumulator by a zero-knowledge proof the
 corresponding bitcoin value is sent to the specified output address.
 
 \begin{figure}[H]
@@ -392,7 +393,7 @@ describes a method of establishing mixing services with some concept of
 warranty, rather than modifying the Bitcoin protocol itself.
 
 In general, sufficiently large mixing services do an acceptable job at providing
-anonymity to users. However, these services have an inherent risk in that users
+anonymity to users; however, these services have an inherent risk in that users
 must entrust the service with their bitcoins in order to utilize the service.
 If a mixing service steals a user's bitcoins, there is no way to prove that the
 theft occurred. Mixcoin's goal is to address this issue by proposing a
@@ -437,11 +438,11 @@ determine their feasibility. Indeed, one of the main goals of this thesis is to
 analyze the computational overhead required to add anonymity to
 cryptocurrencies. This may require implementing these protocols through software
 if no software implementations already exist. Once we have an implementation of
-these systems, we will conduct performance benchmarking to determine the
+these systems we will conduct performance benchmarking to determine the
 computational complexity present in the protocols.
 
 The ideal outcome of this work is that one or more of these systems can be
-implemented with minimal computational cost. However, in the case that the base
+implemented with minimal computational cost. In the case that the base
 systems are not computationally feasible, we will perform more in-depth research
 into possible improvements that can be made to specific algorithms to improve
 performance while maintaining the same overall functionality. It is possible
@@ -450,7 +451,7 @@ new protocol, but this would be an accidental side-effect and not one of our
 primary goals.
 
 \section{Deliverables}
-Upon completion of all proposed work, a thesis report will be submitted.
+Upon completion of all proposed work a thesis report will be submitted.
 Contained in this thesis will be all background research, experiment results,
 and any other required documentation. Additionally, the following software will
 be submitted:
@@ -468,9 +469,9 @@ done in parallel. A proposed schedule is as follows:
     \hline
     April 25, 2014 & Complete thesis proposal submission\\
     May 16, 2014 & Perform block chain analysis on Litecoin\\
-    May 2014 -- August 2014 & \emph{Summer Co-op}\footnote{Research will
-                              continue, but there is no formal timeline for
-                              this period of time}\\
+    May 27 2014 -- August 22 2014 & \emph{Summer Co-op}\footnote{Research will
+                                    continue, but there is no formal timeline for
+                                    this period of time}\\
     September 5, 2014 & Finish required background research, begin software
                         implementation\\
     September 19, 2014 & Finish software implementation, begin benchmarking and
