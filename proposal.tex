@@ -3,6 +3,7 @@
 \newcommand{\Moser}{M{\"o}ser}
 
 \usepackage{algorithm2e}
+\usepackage{amssymb}
 \usepackage[english]{babel}
 \usepackage{changepage}
 \usepackage{cite}
@@ -22,31 +23,32 @@
 \begin{document}
 \thispagestyle{empty}
 \begin{center}
+\begin{Large}
+\emph{Master's Thesis Proposal} \\
+Department of Computer Science \\
+Rochester Institute of Techology \\
+\end{Large}
+\vspace{4em}
 {\huge Anonymity Analysis of Cryptocurrencies} \\
 \vspace{3em}
 {\LARGE Liam Morris} \\
 {\tt lcm1115@rit.edu} \\
 \vspace{3em}
-\emph{Master's Thesis Proposal} \\
-\begin{small}
-Department of Computer Science \\
-Rochester Institute of Techology \\
-Rochester, New York 14623 USA \\
-\end{small}
-\vspace{4em}
 \begin{adjustwidth}{.5in}{.5in}
 Chair: Professor Stanis{\l}aw Radziszowski \hfill {\tt spr@cs.rit.edu} \\
-\vspace{.5em}
+\vspace{2em}
 \hrulefill \\
-\vspace{1em}
+\vspace{3em}
 Reader: Professor Warren Carithers \hfill {\tt wrc@cs.rit.edu} \\
-\vspace{.5em}
+\vspace{2em}
 \hrulefill \\
-\vspace{1em}
-Observer: TBD \hfill {\tt tbd@cs.rit.edu} \\
-\vspace{.5em}
+\vspace{3em}
+Observer: Professor Bo Yuan \hfill {\tt bo.yuan@rit.edu} \\
+\vspace{2em}
 \hrulefill
 \end{adjustwidth}
+\vspace{2em}
+Rochester, NY 14623 USA \\
 \vspace{2em}
 March 25, 2014
 \end{center}
@@ -57,7 +59,7 @@ Cash in the real world allows for parties to exchange currency without the need
 to go through some sort of central authority. One person, Alice, can simply hand
 cash over to another person, Bob. In this transaction the only two people that
 have knowledge of this exchange are Alice and Bob. Until recently there was no
-electric equivalent to this exchange. In 1982 David Chaum proposed a system of
+electronic equivalent to this exchange. In 1982 David Chaum proposed a system of
 anonymous electronic cash based on blind signatures, and in 1990 founded
 DigiCash as an electronic cash company. There were a few banks that implemented
 electronic cash systems, but these banks and DigiCash ultimately went bankrupt
@@ -67,18 +69,18 @@ cash that offer a decentralized, anonymous, and untraceable system.
 
 In 2008 a paper was published by Satoshi Nakamoto on the cryptocurrency known as Bitcoin.
 A cryptocurrency is a form of electronic cash backed by mathematical and
-cryptographical constructs, unlike traditional currency which was historically
+cryptographic constructs, unlike traditional currency which was historically
 backed by gold or silver. Cryptocurrencies have seen rising popularity in recent
 years due to their decentralized, distributed, peer-to-peer protocols. Part of
 this rising popularity is also attributable to the supposed anonymity of these
 protocols; however, due to the public transaction history required for these
-protocols and the fact that transactions are psuedonymous and not purely
+protocols and the fact that transactions are pseudonymous and not purely
 anonymous, this supposed anonymity may not exist. While the systems may achieve
 the goal of decentralized currency it may not achieve the goal of
-untraceability. In this thesis we aim to analyze the technical implementations
+untraceability. In this thesis we will analyze the technical implementations
 of Bitcoin and other cryptocurrencies to determine the level of anonymity
-provided by these protocols. We also aim to research some improvements that have
-already been proposed to determine their feasibility.
+provided by these protocols. We will also research some proposed improvements 
+to determine their feasibility.
 \end{abstract}
 \clearpage
 \pagenumbering{arabic}
@@ -90,8 +92,8 @@ Cash in the real world allows for parties to exchange currency without the need
 to go through some sort of central authority. One person, Alice, can simply hand
 cash over to another person, Bob. In this transaction the only two people that
 have knowledge of this exchange are Alice and Bob. Until recently there was no
-electric equivalent to this exchange. In 1982 David Chaum proposed a system of
-anonymous electronic cash based on blind signatures~\cite{Chaum83}, and in 1990 founded
+electronic equivalent to this exchange. In 1982 David Chaum proposed a system of
+anonymous electronic cash based on blind signatures~\cite{chaum83}, and in 1990 founded
 DigiCash as an electronic cash company. There were a few banks that implemented
 electronic cash systems, but these banks and DigiCash ultimately went bankrupt
 in 1997 and 1998 despite the enthusiasm surrounding anonymous electronic cash.
@@ -100,7 +102,7 @@ cash that offer a decentralized, anonymous, and untraceable system.
 
 In 2008 a paper was published by Satoshi Nakamoto on the cryptocurrency known as Bitcoin~\cite{nakamoto08}.
 A cryptocurrency is a form of electronic cash backed by mathematical and
-cryptographical constructs, unlike traditional currency which was historically
+cryptographic constructs, unlike traditional currency which was historically
 backed by gold or silver. The Bitcoin protocol uses the SHA-256 algorithm as
 part of its cryptographic foundation, while many others such as Litecoin are
 founded on the scrypt key derivation scheme proposed by Colin Percival in
@@ -108,26 +110,110 @@ founded on the scrypt key derivation scheme proposed by Colin Percival in
 years due to their decentralized, distributed, peer-to-peer protocols. Part of
 this rising popularity is also attributable to the supposed anonymity of these
 protocols; however, due to the public transaction history required for these
-protocols and the fact that transactions are psuedonymous and not purely
+protocols and the fact that transactions are pseudonymous and not purely
 anonymous, this supposed anonymity may not exist. While the systems may achieve
 the goal of decentralized currency it may not achieve the goal of
 untraceability. There have been proposals in recent years such as the
 Zerocoin~\cite{miers13} and Mixcoin~\cite{bonneau14} to remove all traceability
-from the Bitcoin protocol. In this thesis we aim to analyze the technical
+from the Bitcoin protocol. In this thesis we will analyze the technical
 implementations of the Bitcoin and Litecoin protocols to determine the level of
-anonymity and traceability provided by these protocols. We also aim to research
+anonymity and traceability provided by these protocols. We will research
 proposed improvements, such as Zerocoin and Mixcoin, to determine their
 feasibility and possible optimizations that can be made.
 
 \section{Cryptographic Tools}
 
-\subsection{ECDSA Keys}
-Bitcoin uses the Elliptic Curve Digital Signature Algorithm (ECDSA) as the basis for its
-public-private key system. Although the use of ECDSA suggests that there is a
-central figure monitoring the public key infrastructure, the specification for
-the ECDSA exists outside of the cryptocurrency. The curve parameters for Bitcoin
-are specified by {\tt secp256k1}\footnote{Specification provided by Standards
-for Efficient Cryptography Group -- \url{http://secg.org}}:
+\subsection{Hash Functions}
+A hash function is an algorithm that processes variable length inputs to produce
+a fixed length digest. Hash functions are important for cryptocurrency protocols
+as they provide the basis on which their proof-of-work schemes are constructed.
+
+Cryptographic hash functions are designed in such a way that they are
+irreversible. In other words, if we have computed a digest of some message we
+should not be able to easily deduce the message from the digest. For a hash
+function to be secure, the following criteria must uphold~\cite{rogaway04}:
+
+\begin{description}
+    \item[Preimage Resistant] Given a digest $H(M)$, it must be computationally
+        difficult to determine $M$.
+    \item[Second Preimage Resistant] Given a message $M_1$, it must be
+        computationally difficult to determine a second message $M_2$ such that
+        $H(M_1) = H(M_2)$.
+    \item[Collision Resistant] It must be computationally difficult to construct
+        two messages $M_1$ and $M_2$ such that $H(M_1) = H(M_2)$.
+\end{description}
+
+Hash functions are frequently used to uniquely identify large messages so that
+they may be efficiently signed. In the case of cryptocurrency protocols this
+typically takes on the form of hashing an entire transaction so that just the
+digest may be signed by a user. In a transaction between Alice and Bob, Alice
+could construct a transaction and sign every parameter with her private
+key individually, which must then be verified with her public key individually.
+This amount of computation is wasteful on both ends, but Alice can use hashing to
+reduce the amount of computation required. She can construct the transaction as
+before, but instead of signing every component she can hash the transaction
+parameters together and then sign the resulting digest. On the other end only
+verification of the signed digest is required.
+
+\subsubsection{Secure Hash Algorithm}
+The Secure Hash Algorithm (SHA) is a family of algorithms published by the National
+Institute of Standards and Technology (NIST). In order for an algorithm to be
+included in the SHA family it must be selected as a winner by NIST in one of its
+hash function competitions.
+
+Bitcoin and Litecoin both use the SHA-256 variant of the SHA-2
+algorithm as part of their proof-of-work scheme\footnote{Litecoin uses
+{\sc scrypt} for its proof-of-work scheme, but {\sc scrypt} performs two
+{\sc SHA-256} hashes as part of the algorithm.}. The SHA-256 function hashes a
+message $M$ in the following manner~\cite{nist}:
+
+\begin{enumerate}
+    \item Pad $M$ so that it is on a 512-bit boundary.
+    \item Divide $M$ into 512-bit blocks $M_1, M_2, \ldots, M_n$.
+    \item Compute $H(M_i) = H(M_i) \boxplus H(M_{i - 1})$ for $i = 1$ to $n$,
+        where $H(M)$ is defined as the hashing operation on one block,
+        $H(M_0)$ is a fixed initial hash value, and
+        $\boxplus$ is defined as integer addition modulo $2^{32}$.
+    \item Output $H(M_n)$ as resulting hash.
+\end{enumerate}
+
+Currently NIST states that the SHA-2 algorithm is still cryptographically
+secure\footnote{\url{http://csrc.nist.gov/groups/ST/hash/policy.html} --
+Accessed 4-1-2014}. If a vulnerability is found then there is the potential for
+attacks on cryptocurrencies, so it is worth examining the more recent SHA-3
+Keccak family. The SHA-3 algorithm is not necessarily more secure than SHA-2;
+however, it is very different structurally so it is unlikely that both SHA-2 and
+SHA-3 would be vulnerable to a single attack.
+
+The SHA-3 algorithm uses a
+sponge construction, which processes variable length input to produce a
+corresponding infinite length output. If a fixed length output
+is desired the output of a sponge function is truncated to the specified
+length. Given a permutation $f$, a sponge function operates in the following
+manner~\cite{bertoni07}:
+\vspace{1em}\\
+\begin{algorithm}[H]
+    \KwIn{$P$ = list of input characters, $n$ = desired hash length}
+    \KwOut{$h_0, h_1, \ldots$ = output characters}
+    $S \gets \emptyset$ \\
+    \For{$p \in P$}{
+        $S \gets f(S \oplus p)$
+    }
+    \For{$i = 1, 2, \ldots, n$}{
+        {\sc Output($S$)} \\
+        $S \gets f(S)$
+    }
+\end{algorithm}
+
+\subsection{Elliptic Curve Digital Signature Algorithm Keys}
+Bitcoin and Litecoin use the Elliptic Curve Digital Signature Algorithm (ECDSA)~\cite{johnson01}
+as the basis for their public-private key system. Although the use of ECDSA
+suggests that there is a central figure monitoring the public key
+infrastructure, the specification for the ECDSA exists outside of the
+cryptocurrency. The curve parameters for Bitcoin and Litecoin are specified by
+{\tt secp256k1}\footnote{{\tt secp256k1} is used in the base
+Bitcoin implementation located at \url{http://github.com/bitcoin} and in the base
+Litecoin implementation at \url{http://github.com/litecoin-project}}\cite{secg}:
 \vspace{1em}\\
 \begin{tabularx}{\textwidth}{cX}
     $F_p$ & finite field where
@@ -202,7 +288,7 @@ to begin circulation. Many other cryptocurrencies are direct forks of Bitcoin,
 so the Bitcoin protocol will be our primary focus.
 
 \subsubsection{Transaction Scheme}
-The transaction scheme of Bitcoin uses psuedonyms to specify a transaction
+The transaction scheme of Bitcoin uses pseudonyms to specify a transaction
 between users on the network. A transaction is recorded as a transfer of some
 value from one user to another, where the input side of a transaction consists
 of one or more public keys and the output side of a transaction consists of one
@@ -604,7 +690,7 @@ systems are not computationally feasible, we will perform more in-depth research
 into possible improvements that can be made to specific algorithms to improve
 performance while maintaining the same overall functionality. It is possible
 that such changes could be significant enough to warrant a formal writeup of a
-new protocol, but this would be an welcome side-effect and not one of our
+new protocol, but this would be a welcome side-effect and not one of our
 primary goals.
 
 \section{Deliverables}
