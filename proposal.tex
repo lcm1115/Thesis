@@ -10,9 +10,12 @@
 \usepackage{float}
 \usepackage[margin=1.5in]{geometry}
 \usepackage{graphicx}
+\usepackage{lmodern}
 \usepackage{setspace}
 \usepackage{tabularx}
 \usepackage{url}
+
+\usepackage[T1]{fontenc}
 
 \bibliographystyle{acm}
 
@@ -129,7 +132,7 @@ a fixed length digest. Hash functions are important for cryptocurrency protocols
 as they provide the basis on which their proof-of-work schemes are constructed.
 
 Cryptographic hash functions are designed in such a way that they are
-irreversible. In other words, if we have computed a digest of some message we
+non-invertible. In other words, if we have computed a digest of some message we
 should not be able to easily deduce the message from the digest. For a hash
 function to be secure, the following criteria must uphold~\cite{rogaway04}:
 
@@ -280,7 +283,7 @@ transaction scheme, a verification scheme, and a transaction ledger. The specifi
 details for each of these may vary between protocols, but they typically exhibit
 the same characteristics regardless of implementation. In particular, different
 protocols may be constructed from different cryptographic primitives and tools,
-as well as be set in entirely different math domains.
+as well as be set in entirely different mathematical domains.
 
 \subsection{Bitcoin Protocol}
 Bitcoin is the most widely used cryptocurrency and is the first cryptocurrency
@@ -314,7 +317,7 @@ order to be verified, approved, and permanently recorded in the block chain.
 \begin{figure}[H]
     \centering
     \caption[Bitcoin transaction process]{Bitcoin transaction process~\cite{nakamoto08}}
-    \includegraphics[width=.9\textwidth,natwidth=361,natheight=227]{figures/transaction.png}
+    \includegraphics[width=.9\textwidth]{figures/transaction.png}
 \end{figure}
 
 \subsubsection{Verification Scheme}
@@ -379,9 +382,9 @@ verified transactions, and accepted blocks. In this way the transaction record
 
 \subsection{Litecoin Protocol}
 Litecoin is the second most widely used
-cryptocurrencies\footnote{\url{http://coinmarketcap.com} -- Accessed 3-18-14,
+cryptocurrency\footnote{\url{http://coinmarketcap.com} -- Accessed 3-18-14,
 Litecoin has the second highest 24 hour trading volume}, and is itself a fork
-of Bitcoins. Litecoin's first block was mined in October
+of Bitcoin. Litecoin's first block was mined in October
 2011\footnote{http://ltc.blockr.io/block/info/1}. Litecoin has a few key
 differences from Bitcoin.
 The primary difference between Litecoin and Bitcoin is how the coins
@@ -558,7 +561,7 @@ charging some sort of processing fee for the service.
 \begin{figure}[H]
     \caption[Example mix network]{Example mix network\protect\footnotemark}
     \centering
-    \includegraphics[width=.8\linewidth,natwidth=1308,natheight=786]{figures/mix.png}
+    \includegraphics[width=.8\linewidth]{figures/mix.png}
 \end{figure}
 
 \footnotetext{\url{http://en.wikipedia.org/wiki/Mix_network} -- Accessed:
@@ -608,7 +611,7 @@ corresponding bitcoin value is sent to the specified output address.
     \centering
     \caption[Bitcoin block chain (a) and Zerocoin block chain (b)]{Bitcoin block
         chain (a) and Zerocoin block chain (b)~\cite{miers13}}
-    \includegraphics[width=\linewidth,natwidth=806,natheight=371]{figures/zerocoin.png}
+    \includegraphics[width=\linewidth]{figures/zerocoin.png}
 \end{figure}
 
 This system creates anonymity by pooling all users' bitcoins together, and then
