@@ -84,11 +84,16 @@ if __name__ == '__main__':
     for v in groups.values():
         if not v.visited:
             curr = [str(t) for t in DFS(v)]
-            sizes.append(len(curr))
-            entities.append('\n'.join(curr))
-            if len(curr) > maxsize:
-                maxsize = len(curr)
-                maxkey = v.label
+            if len(curr) > 1:
+                sizes.append(len(curr))
+                entities.append('\n'.join(curr))
+                if len(curr) > maxsize:
+                    maxsize = len(curr)
+                    maxkey = v.label
+    # Sort entities by size
+    pairs = list(zip(entities, sizes))
+    pairs.sort(key=lambda p: p[1], reverse=True)
+    entities = [pair[0] for pair in pairs]
     print("Number of entities:", len(entities))
     print("Average group size:", statistics.mean(sizes))
     print("Median group size:", statistics.median(sizes))
