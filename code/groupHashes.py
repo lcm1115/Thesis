@@ -76,11 +76,11 @@ def groupHashes(filename):
 
 if __name__ == '__main__':
     groups = groupHashes(sys.argv[1])
-    print("Number of addresses:", len(groups))
     maxsize = 0
     maxkey = list(groups.keys())[0]
     entities = []
     sizes = []
+    dupes = set()
     for v in groups.values():
         if not v.visited:
             curr = [str(t) for t in DFS(v)]
@@ -90,10 +90,13 @@ if __name__ == '__main__':
                 if len(curr) > maxsize:
                     maxsize = len(curr)
                     maxkey = v.label
+            else:
+                dupes.add(curr[0])
     # Sort entities by size
     pairs = list(zip(entities, sizes))
     pairs.sort(key=lambda p: p[1], reverse=True)
     entities = [pair[0] for pair in pairs]
+    print("Number of addresses:", len(groups) - len(dupes))
     print("Number of entities:", len(entities))
     print("Average group size:", statistics.mean(sizes))
     print("Median group size:", statistics.median(sizes))
