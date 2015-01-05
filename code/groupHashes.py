@@ -96,6 +96,8 @@ if __name__ == '__main__':
     pairs = list(zip(entities, sizes))
     pairs.sort(key=lambda p: p[1], reverse=True)
     entities = [pair[0] for pair in pairs]
+    sizes = sorted(list(set(sizes)))
+    print(sizes)
     print("Number of addresses:", len(groups) - len(dupes))
     print("Number of entities:", len(entities))
     print("Average group size:", statistics.mean(sizes))
