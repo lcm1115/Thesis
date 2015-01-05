@@ -499,12 +499,12 @@ users\cite{ron13}. If this is the case, then the same privacy risks exist within
 that has ever interacted with this large entity could have their privacy in this entity's hands.  Should the large
 entity/exchange ever become compromised, then so does any user's data that was ever associated with it.
 
-\subsection{Improving Anonymity}
+\section{Improving Anonymity}
 There have been many attempts to resolve the anonymity issues present in the Bitcoin protocol. Some of these attempts
 have arisen organically within the Bitcoin community and are already in use, while others are proposed by academic
 papers and have yet to be implemented.
 
-\subsubsection{Mixer}
+\subsection{Mixer}
 A very common form of obscuring one's identity is to use a mixer or tumbler\footnote{This name comes from the devices
 used to clean physical coins.}.  These services are based on mix networks~\cite{chaum81}, which are used to mask a
 user's identity within a network, such as the commonly used Tor network.  Unlike mix networks which are used to mix
@@ -536,7 +536,7 @@ individuals. It has even been observed that these services cannot necessarily be
 anonymity suggests that there is a desire for a system which provides anonymity without the need to place trust in some
 sort of central figure.
 
-\subsubsection{Zerocoin}
+\subsection{Zerocoin}
 In 2013, researchers at Johns Hopkins University proposed an extension to improve Bitcoin's anonymity known as
 Zerocoin~\cite{miers13}. The group claims that Zerocoin ``uses standard cryptographic assumptions and does not introduce
 new trusted parties or otherwise change the security model of Bitcoin.'' The basic idea is to add newly minted coins to
@@ -560,7 +560,57 @@ of bitcoins from the pool, as long as the user can prove that the bitcoins exist
 analogous to a mixing service, but there is no requirement to place trust in any figure, as the system is provably
 secure under certain cryptographic assumptions.
 
-\subsubsection{Mixcoin}
+\subsubsection{Performance Concerns}
+While Zerocoin appears to be a promising solution to the problem of anonymity on the Bitcoin network, performance is a
+big concern. The use of 3,072-bit RSA accumulators is very computationally expensive, and every time a coin is spent
+from the coin pool, the accumulator must be recomputed.
+
+One of the big benefits to Zerocoin is that its simple nature allows it to be applied to any cryptocurrency that is a
+derivation of Bitcoin. For cryptocurrencies with long block-verification times such as Bitcoin, the overhead from using
+Zerocoin is fine. The Zerocoin whitepaper describes Zerocoin's performance, and even in a best case (for Zerocoin) and
+worst case (for Bitcoin) scenario where blocks contain twice as many transactions than normal and every transaction is a
+Zerocoin transaction, then the block verification process still takes five minutes.~\cite{miers13} Since Bitcoin has a
+block verification time of ten minutes, this does not cause any problems as it does not affect the overall block
+verification time.
+
+If Zerocoin is utilized in Litecoin then problems may arise. If the same volume of transactions is seen in Litecoin,
+then a five minute block verification time is unacceptable. Since Litecoin's block verification time is targeted at 2.5
+minutes, adding Zerocoin effectively doubles the block verification time. Since this is the case, we wanted to determine
+if there are methods of improving performance such that utilizing Zerocoin in other cryptocurrencies becomes
+computationally feasible. The method we tried was substituting the 3,072-bit RSA accumulator for a 384-bit ECC
+accumulator. Since 256-bit curves offer the same security as 3,072-bit integers, there is no loss of security or
+privacy.\cite{nistcase}
+
+Our method of testing was to use an RSA accumulator with a random 3,072-bit prime \emph{p} and accumulate a number of
+3,072-bit random elements into it, with a corresponding ECC accumulator using Curve P-256~\cite{curves} into which a
+random number of 256-bit elements are accumulated. The time for each accumulator is benchmarked, and results can be
+found in the following table.
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{\# Elements} & \textbf{RSA Time (s)} & \textbf{ECC Time (s)} & \textbf{Performance Multiplier} \\
+    \hline
+    10,000 & 129.131 & 1.151 & 112.19 \\
+    \hline
+    20,000 & 257.768 & 2.3 & 112.073 \\
+    \hline
+    30,000 & 392.755 & 3.521 & 111.546 \\
+    \hline
+    40,000 & 527.18 & 4.571 & 115.331 \\
+    \hline
+    50,000 & 654.387 & 5.681 & 115.189 \\
+    \hline
+\end{tabular}
+\end{center}
+
+As is shown, using an ECC accumulator over an RSA accumulator offers massive performance gains. Assuming these gains
+translate 1:1 to Zerocoin, the five minute Zerocoin verification time can be reduced to a few seconds. With such a quick
+verification time, Zerocoin can now be used with Litecoin, and even cryptocurrencies with drastically shorter block
+verification times such as Dogecoin, which has a one minute verification time. The end result overall is that there is
+now an efficient and computationally feasible method of adding a layer of anonymity to most cryptocurrencies, provided
+that the verfication time is on the order of minutes and not seconds.
+
+\subsection{Mixcoin}
 In 2014, another extension to improve anonymity in current Bitcoin protocol was proposed under the name of
 Mixcoin~\cite{bonneau14}. This protocol describes a method of establishing mixing services with some concept of
 warranty, rather than modifying the Bitcoin protocol itself.
@@ -595,7 +645,7 @@ is also compromised.  Even though Mixcoin makes it easier for Alice to trust a m
 needs to trust the service with her information. This means that even if Mixcoin is utilized that there still
 may be some degree of traceability in the system.
 
-\subsubsection{Stealth Addresses}
+\subsection{Stealth Addresses}
 In 2014 a feature called \emph{stealth addresses} were added to a Bitcoin utility library called
 \texttt{sx}.\footnote{\url{https://github.com/spesmilo/sx}} Stealth addresses are described as ``a powerful tool for
 allowing one to accept Bitcoins using a public Bitcoin address while preventing passive observers from knowing your
