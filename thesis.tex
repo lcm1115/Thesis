@@ -18,8 +18,6 @@
 
 \usepackage[T1]{fontenc}
 
-\bibliographystyle{acm}
-
 \graphicspath{{figures}}
 
 \onehalfspacing
@@ -225,6 +223,85 @@ The overall process for deriving a key using scrypt is as follows:
     \item Output resulting hash.
 \end{enumerate}
 
+\subsection{Accumulators}
+A cryptographic accumulator is a form of a one-way function in which members in a set cannot be determined, but it can
+be shown that an item belongs to the set. A simple example of this is the prime factors of a large number. The prime
+factors cannot be easily determined, but it is trivial to determine if a given number is a factor of the larger number.
+The three components required for an accumulator are:
+\begin{itemize}
+    \item A cyclic group, \emph{G}, whose elements will be used in the accumulator
+    \item An accumulate function which adds elements to the accumulator
+    \item A witness function which verifies an element's presence in the accumulator
+\end{itemize}
+
+\subsubsection{Strong RSA Accumulator}
+In 1994, a one-way accumulator based on the RSA cryptosystem was introduced by Josh Benaloh and Michael De
+Mare.\cite{benaloh1994} This accumulator can be used for accumulating integers. The properties of this accumulator are:
+\begin{itemize}
+    \item $N = p \cdot q$
+    \item generator value $u \in \mathbb{Z}_N$
+    \item elements to be accumulated (primes modulo $N$) $e_1, e_2, \ldots, e_n$
+\end{itemize}
+
+The function for accumulating elements and producing accumulator value $A$ is defined as follows:
+\begin{center}
+    $A \equiv u^{e_1 e_2 \cdots e_n} \textrm{mod} N$
+\end{center}
+
+The accumulation function produces $n$ corresponding witness values computed as:
+\begin{center}
+    $w_i \equiv u^{e_1 e_2 \cdots e_{i-1} e_{i+1} \cdots e_n} \textrm{mod} N$
+\end{center}
+
+To verify that some element $e_i$ exists given some witness $w_i$, the following equivalence must be true:
+\begin{center}
+    $A \equiv w_i^{e_i} \textrm{mod} N$
+\end{center}
+
+\subsubsection{Elliptic Curve Accumulator}
+Accumulators based on elliptic curves can be created for accumulating integers with a system similar to the Strong RSA
+Accumulator. The properties for such an accumulator are:
+\begin{itemize}
+    \item elliptic curve with cyclic group $G$ with order $N$ and modulus $p$
+    \item generator point $P \in G$ 
+    \item elements to be accumulated (primes modulo $N$) $e_1, e_2, \ldots, e_n$
+\end{itemize}
+
+The function for accumulating elements and producing accumulator point $A$ is defined as follows:
+\begin{center}
+    $A = (e_1 e_2 \cdots e_n) G$
+\end{center}
+
+The corresponding witness values produced are:
+\begin{center}
+    $W_i = (e_1 e_2 \cdots e_{i-1} e_{i+1} \cdots e_n) G$
+\end{center}
+
+To verify that some element $e_i$ exists given some witness $w_i$, the following equivalence must be true:
+\begin{center}
+    $A = e_i W_i$
+\end{center}
+
+\subsubsection{Pedersen Commitment Scheme}
+A cryptographic commitment scheme allows a person to publicly ``commit'' to a value without revealing the value itself.
+Additionally, once a commitment has been made neither the value committed to nor the commitment statement can be
+changed. Traditional commitment schemes involve two separate steps:
+\begin{enumerate}
+    \item the \emph{commit} step in which a person commits to a value
+    \item the \emph{reveal} step in which the value is revealed and verified
+\end{enumerate}
+
+In 1999, Torben Pryds Pedersen introduced a commitment scheme for integers.\cite{pedersen} In this scheme, two primes
+\emph{p} and \emph{q} are chosen such that $q-1$ divides \emph{p}, giving unique group \emph{G} in $\mathbb{Z}_p$ with
+order \emph{q}. Select $g, h \in G$ such that $\log_g h$ is not known. To commit to some value $s \in \mathbb{Z}_q$, a
+user selects a random value $t \in \mathbb{Z}_q$ and computes:
+\begin{center}
+    $E(s,t) = g^sh^t$
+\end{center}
+
+This value is then shared as the commitment. The commitment can be revealed at a later time but revealing the values of
+\emph{s} and \emph{t} and confirming that $E(s,t)$ can be computed with these values.
+
 \section{Cryptocurrency Protocols}
 Cryptocurrency protocols generally consist of three main components: a transaction scheme, a verification scheme, and a
 transaction ledger. The specific details for each of these may vary between protocols, but they typically exhibit the
@@ -250,7 +327,6 @@ key.
     \end{enumerate}
 \end{minipage}
 \vspace{1em}\\
-
 Once a transaction has been created it is sent out to the Bitcoin network in order to be verified, approved, and
 permanently recorded in the block chain.
 
@@ -260,16 +336,24 @@ permanently recorded in the block chain.
     \includegraphics[width=.9\textwidth]{figures/transaction.png}
 \end{figure}
 
-\subsubsection{Verification Scheme}
+\subsubsection{Transaction Blocks}
 Once a transaction has been initiated it must be verified by users in the Bitcoin network in order for the transaction
-to be fully committed. Verification of a transaction requires some proof-of-work in order to complete the block and
-append it to the block chain. The proof-of-work scheme used by the Bitcoin protocol is based on the Hashcash
-proof-of-work scheme proposed by Adam Back in 2002.~\cite{back02}. The original Hashcash specification was intended to
-prevent denial of service attacks in email service but has found popular usage within the Bitcoin protocol.  To complete
-proof-of-work for a transaction, a SHA-256 hash with inputs of the previous hash and a nonce must be found such that the
-resulting hash is below a specified difficulty level. In other words, we must feed the SHA-256 algorithm the previous
-hash of the coin concatenated with a nonce or string such that we have a specified number of leading 0's in the
-resulting hash. One common way of computing proof-of-work is using the following algorithm:
+to be fully committed. As transactions are sent out to the Bitcoin network, miners accumulate the transactions into a
+block. As of January 2015, average size of each block varies greatly with a range of roughly 300 to 800 transactions per
+block.\footnote{\url{http://blockchain.info/charts/n-transactions-per-block}} However, this size is increasing over time
+as the average size ranged from roughly 200 to 400 only one year prior in January 2014. The size of these blocks ranges
+from about 150KB to 450KB,\footnote{\url{http://blockchain.info/charts/avg-block-size}} creating a total size of 33GB
+for the entire block chain.\footnote{\url{http://bitinfocharts.com/}}
+
+\subsubsection{Verification Scheme}
+Verification of a block requires some proof-of-work in order to complete the block and append it to the block chain. The
+proof-of-work scheme used by the Bitcoin protocol is based on the Hashcash proof-of-work scheme proposed by Adam Back in
+2002.~\cite{back02}. The original Hashcash specification was intended to prevent denial of service attacks in email
+service but has found popular usage within the Bitcoin protocol.  To complete proof-of-work for a transaction, a SHA-256
+hash with inputs of the previous hash and a nonce must be found such that the resulting hash is below a specified
+difficulty level. In other words, we must feed the SHA-256 algorithm the previous hash of the coin concatenated with a
+nonce or string such that we have a specified number of leading 0's in the resulting hash. One common way of computing
+proof-of-work is using the following algorithm:
 \vspace{1em}\\
 \begin{algorithm}[H]
     \KwIn{$D$ = difficulty parameter, $P$ = previous transaction hash}
@@ -291,7 +375,9 @@ happens every 2016 blocks which is specified by the {\tt bitcoind} client at \ur
 
 The node which distributes the completed block to the network is rewarded with bitcoins if the block is accepted. This
 reward starts out at 50 bitcoins per block and is halved after every 210,000 blocks, which means that bitcoins
-ultimately have an maximum quantity of roughly 21,000,000~\cite{nakamoto08}.
+ultimately have an maximum quantity of roughly 21,000,000~\cite{nakamoto08}. Once Bitcoins are no longer awarded for
+verifying blocks, the incentive must come from elsewhere. Fees can be attached to Bitcoin transactions, which simply
+means that whoever verifies the block containing that transaction will receive the Bitcoins attached as a fee.
 
 \subsubsection{Network Structure}
 The original Bitcoin whitepaper~\cite{nakamoto08} describes the Bitcoin network in the following way: 
@@ -322,13 +408,20 @@ halving after every 210,000 blocks, the reward for verifying a block halves afte
 records the signatures of all users involved, the amount being transferred in a block which is then itself part of a
 larger block chain.
 
-\subsubsection{Verification Scheme} Litecoin was forked from Bitcoin to address the strength that special purpose
-hardware brings to Bitcoin. Users in the Bitcoin network with application specific integrated circuits (ASIC) designed
-specifically for computing SHA-256 hashes have an enormous advantage over users without such hardware. To address this
-Litecoin uses the scrypt~\cite{percival09} key derivation scheme instead of SHA-256, which changes the hashing scheme
-from a CPU-bound operation to a memory-bound operation. By changing the verification problem from a CPU-hard to
-memory-hard problem, parallelization no longer improves the speed of solving the problem. This yields the following
-Litecoin proof-of-work algorithm:
+\subsubsection{Transaction Blocks}
+Litecoin blocks are created the same way as Bitcoin. However, Litecoin's average block size is significantly smaller due
+to its faster verification time and smaller trading volume. The monthly average number of transactions per Litecoin
+block ranges from about 3 to 30.\footnote{\url{http://www.coindesk.com/data/litecoin-number-transactions-per-block/}}
+Most blocks are smaller than 10KB, with the majority of blocks being on the order of several hundred bytes. The total
+size for the Litecoin block chain is 3.95GB.\footnote{\url{https://bitinfocharts.com}}
+
+\subsubsection{Verification Scheme}
+Litecoin was forked from Bitcoin to address the strength that special purpose hardware brings to Bitcoin. Users in the
+Bitcoin network with application specific integrated circuits (ASIC) designed specifically for computing SHA-256 hashes
+have an enormous advantage over users without such hardware. To address this Litecoin uses the scrypt~\cite{percival09}
+key derivation scheme instead of SHA-256, which changes the hashing scheme from a CPU-bound operation to a memory-bound
+operation. By changing the verification problem from a CPU-hard to memory-hard problem, parallelization no longer
+improves the speed of solving the problem. This yields the following Litecoin proof-of-work algorithm:
 \begin{algorithm}
     \KwIn{$D$ = difficulty parameter, $P$ = previous transaction hash}
     \KwOut{$S$ = salt, $H$ = resulting hash}
@@ -393,7 +486,7 @@ In 2013 Ron and Shamir~\cite{ron13} performed analysis on the Bitcoin network us
 First they performed similar analysis to Reid and Harrigan to build a graph of entities, and then analyzed large
 transactions to and from those entities. One of the first results from this analysis is that they were able to easily
 identify a few key entities: Mt.  Gox\footnote{The largest bitcoin exhange at the time, filed for bankruptcy February
-28, 2014l}, Instawallet\footnote{Another large bitcoin exhange, shut down April 3rd, 2013.}, and DeepBit\footnote{The
+28, 2014}, Instawallet\footnote{Another large bitcoin exhange, shut down April 3rd, 2013.}, and DeepBit\footnote{The
 largest mining pool at the time the study was performed.}.
 
 Another key result determined from this analysis is the transaction patterns that are commonly used to attempt to
@@ -423,12 +516,12 @@ one can imagine a scenario where some law enforcement agency might want to inves
 sort of illicit activity. We can determine a group of addresses that belong to the user, and if any of those addresses
 interacted with a Bitcoin exchange or service, the law enforcement agency could seize the personal information of the
 user from such a service. Even further, we can see all addresses with which the user interacted, which could implicate
-other users involved in illicit activities. This allows the law enforcement agency to closely analyze these users more
-closely, some of which may have interacted with a Bitcoin exchange, and so on.
+other users involved in illicit activities. This allows the law enforcement agency to analyze these users more closely,
+some of which may have interacted with a Bitcoin exchange, and so on.
 
 \subsection{Litecoin Transaction Graph}
 In order to see if anonymity characteristics are present in other cryptocurrencies, we have performed analysis on the
-Litecoin transaction ledger similar to what Meiklejohn et al.\ performed on the Bitcoin transaction
+Litecoin transaction ledger similar to what \mbox{Meiklejohn} et al.\ performed on the Bitcoin transaction
 ledger\cite{meiklejohn13}. We parsed all Litecoin transactions to identify which addresses necessarily belong to the
 same person. Our heuristic for this is if there are multiple addresses listed as input addresses in the same
 transaction, they must belong to the same person. With this knowledge we can then build a graph of addresses with edges
@@ -451,28 +544,43 @@ in a list of input addresses to a single transaction. For example, suppose we ha
 A B C
 
 D E
+
+B F G
+
+H I
+
+E I
 \end{verbatim}
 
 From the contents of this file it can be seen that addresses \texttt{A}, \texttt{B}, and \texttt{C} were inputs to one
-transaction and addresses \texttt{D} and \texttt{E} were inputs to another transaction. Our algorithm generates the
-following graph for this input.
+transaction and addresses \texttt{D} and \texttt{E} were inputs to another transaction. At a later point \texttt{B},
+\texttt{F}, and \texttt{G} were inputs to a single transaction, which means that \texttt{A}, \texttt{B}, \texttt{C},
+\texttt{F}, and \texttt{G} all belong to a single entity. When the transaction involving \texttt{H} and \texttt{I}
+occurs, it cannot be tied to any previous entities. However, once the transaction with \texttt{E} and \texttt{I} occurs,
+we can deduce that \texttt{D}, \texttt{E}, \texttt{H}, and \texttt{I} all belong to the same person. The result is the
+following graph, where the nodes represent individual addresses and components represent entities.
 
 \begin{center}
-    \begin{tikzpicture}[main node/.style={circle,draw,font=\sffamily\Large\bfseries}]
-        \node[main node] (1) at (0, 0) {A};
+    \begin{tikzpicture}[main node/.style={circle,draw,font=\ttfamily\Large\bfseries}]
+        \node[main node] (1) at (0, 3) {A};
         \node[main node] (2) at (1, 1.5) {B};
-        \node[main node] (3) at (2, 0) {C};
-        \node[main node] (4) at (4, 0) {D};
-        \node[main node] (5) at (6, 0) {E};
+        \node[main node] (3) at (2, 3) {C};
+        \node[main node] (4) at (4, 3) {D};
+        \node[main node] (5) at (6, 3) {E};
+        \node[main node] (6) at (0, 0) {F};
+        \node[main node] (7) at (2, 0) {G};
+        \node[main node] (8) at (4, 0) {H};
+        \node[main node] (9) at (6, 0) {I};
         \draw (1) -- (2) -- (3);
-        \draw (4) -- (5);
+        \draw (6) -- (2) -- (7);
+        \draw (4) -- (5) -- (9) -- (8);
     \end{tikzpicture}
 \end{center}
 
 Once this graph is constructed, performing a DFS on each component of the graph generates the following output:
 \begin{verbatim}
-Entity 1: A, B, C
-Entity 2: D, E
+Entity 1: A, B, C, F, G
+Entity 2: D, E, I, H
 \end{verbatim}
 
 We implemented the algorithm using a number of Python and bash scripts. All code for the analysis can be found at:
@@ -483,7 +591,6 @@ We ran our algorithm on all Litecoin transactions starting from block 0 on 10-07
 05-05-2014. These blocks include 4,143,573 total transactions. The set of transactions \emph{T} which have multiple
 inputs in a single transaction make up 901,424 of the transactions. Within \emph{T}, there are 1,718,624 distinct
 addresses. After running the algorithm on the data set, we determined the following:
-\pagebreak
 \begin{verbatim}
 Number of distinct entities: 300,224
 Average entity size (in # addresses): 8.76
@@ -519,7 +626,7 @@ sort of processing fee for the service.
 
 \footnotetext{\url{http://en.wikipedia.org/wiki/Mix_network} -- Accessed: 3-25-14}
 
-A great deal of work has been done to analyze the anonymity provided by these services.  In 2013, Malte \Moser analyzed
+A great deal of work has been done to analyze the anonymity provided by these services.  In 2013, Malte \Moser~analyzed
 three popular mixing services: Blockchain.info, Bitcoin Fog, and BitLaundry~\cite{moser13}. The key results of this
 experiment were that Blockchain.info and Bitcoin Fog both used complex methods of distributing transactions which
 eliminate the ability to discover any connection between input and output transactions, effectively anonymizing the
@@ -543,11 +650,16 @@ new trusted parties or otherwise change the security model of Bitcoin.'' The bas
 an accumulator and then with the assistance of zero-knowledge proofs spend the coins from the accumulator without
 revealing a user's identity.
 
-The Zerocoin protocol essentially creates a currency within Bitcoin. To mint zerocoins, a user adds his bitcoins to the
-Zerocoin accumulator and receives serial numbers in return, which correspond to the zerocoins that were ``minted.'' To
-later redeem the coins, the user must initiate a ``Zerocoin Spend'' transaction and specify an output Bitcoin address.
-Upon verification of the bitcoins' presence in the accumulator by a zero-knowledge proof the corresponding bitcoin value
-is sent to the specified output address.
+The Zerocoin protocol essentially creates a currency within Bitcoin. To mint zerocoins, a user generates a random serial
+number \emph{s} and a random nonce \emph{r}. These two values are then used as inputs to a Pedersen commitment to
+receive resulting zerocoin \emph{C}. If \emph{C} is not prime, then a new \emph{r} is chosen until a prime value
+\emph{C} is computed. Once the coin has been ``minted,'' it is sent to users to be added to the Zerocoin accumulator
+which is based on the Strong RSA Accumulator. In order to spend these coins, a user sends out a transaction with the
+coin serial \emph{C}, the values \emph{s} and \emph{r} that produce \emph{C}, and the address to which the coins should
+be sent. Users verifying transactions can then confirm the presence of \emph{C} in the accumulator, while also verifying
+that the values \emph{s} and \emph{r} are valid. Once this is confirmed the output address is then considered to be the
+owner of the bitcoins associated with the zerocoin, and the accumulator must be recomputed with all values except
+\emph{C}.
 
 \begin{figure}[H]
     \centering
@@ -555,10 +667,11 @@ is sent to the specified output address.
     \includegraphics[width=\linewidth]{figures/zerocoin.png}
 \end{figure}
 
-This system creates anonymity by pooling all users' bitcoins together, and then allowing for redemption of a random set
-of bitcoins from the pool, as long as the user can prove that the bitcoins exist in the pool. In a sense, this is
-analogous to a mixing service, but there is no requirement to place trust in any figure, as the system is provably
-secure under certain cryptographic assumptions.
+This system creates anonymity since there is no way to link together the minting and spending operations of zerocoins.
+Any user can spend any of the zerocoins as long as he can prove the existence of the zerocoin and the values associated
+with its minting. In a sense, this is analogous to a mixing service, but there is no requirement to place trust in any
+figure, as the system is provably secure under certain cryptographic assumptions. The only centralization in this system
+is the establishment of the infrastructure used.
 
 \subsubsection{Performance Concerns}
 While Zerocoin appears to be a promising solution to the problem of anonymity on the Bitcoin network, performance is a
@@ -668,6 +781,7 @@ anonymity.\cite{nakamoto08} The only difference here is that the \emph{payer} ge
 the \emph{payee}. This process still does not allow for a user to remain purely anonymous without needing to use a new
 address for every transaction.
 
+\bibliographystyle{acm}
 \bibliography{references}
 
 \end{document}
