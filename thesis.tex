@@ -55,15 +55,14 @@
 \pagebreak
 \thispagestyle{empty}
 \begin{abstract}
-    Cash in the real world
-    allows for parties to exchange currency without the need to go through some sort of central authority. One person,
-    Alice, can simply hand cash over to another person, Bob. In this transaction the only two people that have knowledge
-    of this exchange are Alice and Bob. Until recently there was no electronic equivalent to this exchange. In 1982
-    David Chaum proposed a system of anonymous electronic cash based on blind signatures, and in 1990 founded DigiCash
-    as an electronic cash company. There were a few banks that implemented electronic cash systems, but these banks and
-    DigiCash ultimately went bankrupt in 1997 and 1998 despite the enthusiasm surrounding anonymous electronic cash.
-    Between 1998 and 2008 there were no successful implementations of electronic cash that offer a decentralized,
-    anonymous, and untraceable system.
+    Cash in the real world allows for parties to exchange currency without the need to go through some sort of central
+    authority. One person, Alice, can simply hand cash over to another person, Bob. In this transaction the only two
+    people that have knowledge of this exchange are Alice and Bob. Until recently there was no electronic equivalent to
+    this exchange. In 1982 David Chaum proposed a system of anonymous electronic cash based on blind signatures, and in
+    1990 founded DigiCash as an electronic cash company. There were a few banks that implemented electronic cash
+    systems, but these banks and DigiCash ultimately went bankrupt in 1997 and 1998 despite the enthusiasm surrounding
+    anonymous electronic cash.  Between 1998 and 2008 there were no successful implementations of electronic cash that
+    offer a decentralized, anonymous, and untraceable system.
 
     In 2008 a paper was published by Satoshi Nakamoto on the cryptocurrency known as Bitcoin.  A cryptocurrency is a form of
     electronic cash backed by mathematical and cryptographic constructs, unlike traditional currency which was historically
@@ -302,6 +301,42 @@ user selects a random value $t \in \mathbb{Z}_q$ and computes:
 This value is then shared as the commitment. The commitment can be revealed at a later time but revealing the values of
 \emph{s} and \emph{t} and confirming that $E(s,t)$ can be computed with these values.
 
+\section{Chaumian e-cash}
+David Chaum introduced a system of electronic cash, or e-cash, in 1983 to provide a digital analog to real-world cash
+transactions. The system uses blind signatures to ``mint'' dollar bills from a bank, which can then at a later time be
+redeemed at the bank such that the origin of the bills is unknown.\cite{chaum83} If Alice wants to give Bob \$1, the
+following process is used:
+\begin{enumerate}
+    \item Alice generates a random serial number.
+    \item Alice performs a blinding operation on the serial number such that the serial cannot be deduced.
+    \item Alice requests that the bank sign the blinded serial number with a key that indicates it has a value of \$1.
+    \item Alice unblinds the serial number, which is now signed to have a value of \$1, and sends it to Bob.
+    \item Bob sends the serial number to the bank.
+    \item The bank verifies the signature on the serial number and credits Bob with \$1.
+\end{enumerate}
+
+The actual blinding operation is based on RSA. The bank publishes a public key $n=pq$ and computes private key
+$3^{-1}$ mod $(p-1)(q-1)$. Alice generates a random number $r$ and uses hash function $h$ to send the value
+$r^3h(m)$ mod $n$ to the bank, where $m$ is the random serial number for the bill. The bank computes the third
+root of the value and returns $rh(m)^{1/3}$ mod $n$ back to Alice. Alice divides the value by $r$ and then has
+the value $h(m)^{1/3}$, which with $m$ acts as the ``dollar bill'' to be sent to Bob.
+
+One problem that must be solved with e-cash is double-spending. Double-spending is a process by which Alice tries to
+spend her e-cash bill at two different locations. When verified, the bank certainly sees that the bill is legitimate but
+has no way to confirm that the bill has not already been spent. Chaum proposed a solution to this by encoding the
+original user's name into the bill such that spending the bill once reveals no information, but spending the bill twice
+reveals the identity of the person attempting the double spend.\cite{chaum1990}
+
+The mint process for this style of e-cash uses two different hash functions $h_1$ and $h_2$, which take two inputs and
+produce one output. The initial value to be signed by the bank is computed by Alice as $B_i = {r_i}^3h_1(x_i,y_i)$, where
+$x_i=h_2(a_i,c_i)$ and $y_i=h_2a(a_i \oplus (\textrm{Alice} || i), d_i)$. The values $a_i, c_i, d_i,$ and $r_i$ are all
+randomly selected from $\mathbb{Z}_n$ for each $i$ from 1 to $2k$, where $k$ is a security parameter. In order to spend
+the money, Alice must reveal $x_i$ and $y_i$, and the calculation of either $x_i$ or $y_i$. With these pieces of
+information alone her identity is not revealed. However, if both pieces are revealed then her identity can be computed.
+When receiving the money from Alice, Bob requests whichever component he desires for each piece $i$. In this manner,
+with a large $k$ it is unlikely that two people receiving the same money from Alice will choose exactly the same
+components for every single piece.
+
 \section{Cryptocurrency Protocols}
 Cryptocurrency protocols generally consist of three main components: a transaction scheme, a verification scheme, and a
 transaction ledger. The specific details for each of these may vary between protocols, but they typically exhibit the
@@ -394,6 +429,37 @@ The original Bitcoin whitepaper~\cite{nakamoto08} describes the Bitcoin network 
 In other words, all nodes in the network are made aware of new transactions, verified transactions, and accepted blocks.
 In this way the transaction record (block chain) is shared among all nodes in the network.
 
+\subsection{Economics}
+Given that a bitcoin's value derives strictly from how much people are willing to pay for bitcoin, the value is quite
+volatile. At Bitcoin's inception in 2009, BTC had no value whatsoever. Even four years later in January 2013 each BTC
+was worth roughly \$13. However, during 2013 interest in Bitcoin skyrocketed which increased the value by 8000\% to a
+staggering \$1100 per BTC.~\cite{ciaian2014economics} This Bitcoin craze eventually settled down and the price of BTC
+has been slowly falling but tends to stay in the range of \$300 to \$500 per BTC.
+
+Since the Bitcoin economy is so volatile it is very vulnerable to things such as inflation. In late 2014 about 50,000
+of BTC were seized by the U.S. government and subsequently sold in an auction.\cite{reutersgov} The bitcoins ended up
+being sold for a total of \$18.6 million, which was only slightly below the market value. Only one month later, the
+price of BTC sits at around \$250. While it is difficult to draw direct relations between the two events, it is
+certainly reasonable that the sudden sale of 50,000 BTC below market value would affect the market. While this is a
+relatively small seizure of property, larger seizures and auctions could seriously affect the market. Additionally,
+should a government entity have an opposition to Bitcoin, it would not be difficult to directly disrupt the market by
+buying up BTC and deliberately selling at a significantly lower price. Alternatively, direct government statements can
+dramatically impact BTC value. In December 2013, China declared that it does not recognize BTC as a legitimate currency
+and that it has no value. This caused the value of BTC to rapidly decline to nearly half of its value within a few
+weeks.\footnote{\url{http://www.cryptocoincharts.info/pair/btc/usd/btc-e/alltime}}
+
+One of the largest economic concerns for BTC is tax evasion. Real-world cash transactions are taxed by the use of sales
+tax. However, BTC can be spent freely without any taxation. Even if taxation is desired, it is difficult to figure out
+which parties should be paying taxes (is this a purchase for a good, or perhaps just a birthday present to someone?),
+what the tax rate should be (in which country or municipality is the purchase being made). With pure anonymity, none of
+these questions can be answered with certainty. Some economists feel that in the future cryptocurrencies will become a
+tax haven for wealthy individuals to hide their money and avoid paying taxes.\cite{marian2013}
+
+An important observation to note is that these changes in BTC value also cause changes in the value of other
+cryptocurrencies. The value of BTC and LTC tend to show the same change over time.\footnote{\url{http://www.cryptocoincharts.info/pair/btc/usd/okcoin/1-year}}~\footnote{\url{http://www.cryptocoincharts.info/pair/ltc/usd/okcoin/1-year}}
+The implication of this is that drastic market changes in one cryptocurrency are likely to cause similar changes in
+another market, which means that any given cryptocurrency has multiple attack vectors.
+
 \subsection{Litecoin Protocol} Litecoin is the second most widely used cryptocurrency\footnote{\url{http://coinmarketcap.com} -- Accessed 3-18-14, Litecoin has the second highest 24 hour
 trading volume}, and is itself a fork of Bitcoin. Litecoin's first block was mined in October
 2011\footnote{http://ltc.blockr.io/block/info/1}. Litecoin has a few key differences from Bitcoin.  The primary
@@ -439,7 +505,7 @@ network nodes are users connected to the network who receive notifications of ne
 transactions.
 
 \section{Anonymity Characteristics}
-\subsection{Current State of Anonymity}
+\subsection{Current State of Cryptocurrency Anonymity}
 Users in the Bitcoin community can be falsely led to the conclusion that their transactions are purely anonymous. For
 example, WikiLeaks accepts bitcoin donations and states\footnote{\url{http://shop.wikileaks.org/donate} -- Accessed:
 3-25-14},
