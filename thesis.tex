@@ -10,13 +10,24 @@
 \usepackage{float}
 \usepackage[margin=1.5in]{geometry}
 \usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
 \usepackage{lmodern}
 \usepackage{setspace}
+\usepackage{supertabular}
 \usepackage{tabularx}
 \usepackage{tikz}
 \usepackage{url}
 
 \usepackage[T1]{fontenc}
+
+\lstset{
+    basicstyle=\small,
+    showspaces=false,
+    showstringspaces=false,
+    tabsize=2,
+    title=\lstname,
+}
 
 \graphicspath{{figures}}
 
@@ -169,6 +180,126 @@ specified length. Given a permutation $f$, a sponge function operates in the fol
     $S \gets f(S)$ }
 \end{algorithm}
 
+The specific details for SHA-3 are as follows\cite{sha3}:
+\begin{itemize}
+    \item \emph{w} - size in bits of state words
+    \item \emph{a} - overall state which consists of 5x5 ``sheets'' of \emph{w}-bit words
+    \item $\Theta$ - parity of 5-bit columns to be XORed into other columns
+    \item $\rho$ - bitwise rotation operation, where each word is rotated by a triangular number
+    \item $\pi$ - permutation of state, $a[j][2i+3j] \leftarrow a[i][j]$
+    \item $\chi$ - bitwise combination operation of rows
+    \item $\iota$ - XOR operation, XOR round constant into single word of state
+\end{itemize}
+
+Each round of SHA-3 uses the following function (\emph{Round}, where $B, C, D$ are intermediate variables):
+\vspace{1em}\\
+\begin{algorithm}[H]
+    \KwIn{$A$ = current state, $RC$ = round counter}
+    \KwOut{$A$ = new state}
+    // $\Theta$ step \\
+    \For{$x$ in $0 \dots 4$}{$C[x] = A[x,0] \oplus A[x,1] \oplus A[x,2] \oplus A[x,3] \oplus A[x,4]$}
+    \For{$x$ in $0 \dots 4$}{$D[x] = C[x-1] \oplus rot(C[x+1],1)$}
+    \For{$(x,y)$ in $(0 \dots 4, 0 \dots 4)$}{$A[x,y] \oplus D[x]$}
+    // $\rho, \pi$ steps \\
+    \For{$(x,y)$ in $(0 \dots 4, 0 \dots 4)$}{$B[y,2*x+3*y] = rot(A[x,y], r[x,y])$}
+    // $\chi$ step \\
+    \For{$(x,y)$ in $(0 \dots 4, 0 \dots 4)$}{$A[x,y] = B[x,y] \oplus (!B[x+1,y] \& B[x+2,y])$}
+    // $\iota$ step \\
+    $A[0,0] = A[0,0] \oplus RC$ \\
+    \Return{$A$}
+\end{algorithm}
+
+The algorithm for SHA-3 operates in the following manner:
+\vspace{1em}\\
+\begin{algorithm}[H]
+    \KwIn{$M$ = arbitrary length input}
+    \KwOut{$Z$ = hashed message}
+    $S[x, y] = 0$ \\
+    $P = M$ || 0x01 || 0x00 || \dots || 0x01 // Initialize $P$\\
+    $P = P~\oplus$ (0x00 || \dots || 0x00 || 0x80) \\
+    \For{block $P_i$ in $P$}{ $S[x,y] = S[x,y] \oplus P_i[x+5*y]$ // Absorb input \\ $S = Keccak\mbox{-}p[r+c](S)$ }
+    $Z = \epsilon$
+    \While{output is requested}{$Z = Z || S[x,y]$ \\ $S = Keccak\mbox{-}p[r+c](S)$}
+    \Return{$Z$}
+\end{algorithm}
+\vspace{1em}
+The \emph{Keccak-p} function simply takes the given input and performs the \emph{Round} operation on it, using round
+constants $0 \dots n_r - 1$. The round constants and rotation offsets specified by SHA-3
+are\footnote{\url{http://keccak.noekeon.org/specs_summary.html}}:
+\begin{center}
+\begin{tabular}{|l|l|}
+    \hline
+    Round Number & Round Constant \\
+    \hline
+    0 & 0x0000000000000001 \\ 
+    \hline
+    1 & 0x0000000000008082 \\
+    \hline
+    2 & 0x800000000000808A \\ 
+    \hline
+    3 & 0x8000000080008000 \\ 
+    \hline
+    4 & 0x000000000000808B \\ 
+    \hline
+    5 & 0x0000000080000001 \\ 
+    \hline
+    6 & 0x8000000080008081 \\ 
+    \hline
+    7 & 0x8000000000008009 \\ 
+    \hline
+    8 & 0x000000000000008A \\ 
+    \hline
+    9 & 0x0000000000000088 \\ 
+    \hline
+    10 & 0x0000000080008009 \\
+    \hline
+    11 & 0x000000008000000A \\ 
+    \hline
+    12 & 0x000000008000808B \\
+    \hline
+    13 & 0x800000000000008B \\
+    \hline
+    14 & 0x8000000000008089 \\
+    \hline
+    15 & 0x8000000000008003 \\
+    \hline
+    16 & 0x8000000000008002 \\
+    \hline
+    17 & 0x8000000000000080 \\
+    \hline
+    18 & 0x000000000000800A \\
+    \hline
+    19 & 0x800000008000000A \\
+    \hline
+    20 & 0x8000000080008081 \\
+    \hline
+    21 & 0x8000000000008080 \\
+    \hline
+    22 & 0x0000000080000001 \\
+    \hline
+    23 & 0x8000000080008008 \\
+    \hline
+\end{tabular}
+\vspace{1em}\\
+Rotation Offsets
+\vspace{1em}\\
+\begin{tabular}{|r|r|r|r|r|r|}
+    \hline
+        & x=3 & x=4 & x=0 & x=1 & x=2 \\
+    \hline
+    y=2 & 25 & 39 & 3 & 10 & 43 \\
+    \hline
+    y=1 & 55 & 20 & 36 & 44 & 6 \\
+    \hline
+    y=0 & 28 & 27 & 0 & 1 & 62 \\
+    \hline
+    y=4 & 56 & 14 & 18 & 2 & 61 \\
+    \hline
+    y=3 & 21 & 8 & 41 & 45 & 15 \\
+    \hline
+\end{tabular}
+\end{center}
+
 \subsection{Elliptic Curve Digital Signature Algorithm Keys}
 Bitcoin and Litecoin use the Elliptic Curve Digital
 Signature Algorithm (ECDSA)~\cite{johnson01} as the basis for their public-private key system. Although the use of ECDSA
@@ -221,6 +352,16 @@ The overall process for deriving a key using scrypt is as follows:
             provide collision resistance, so a separate step is needed to provide collision resistance.}.
     \item Output resulting hash.
 \end{enumerate}
+
+Steps 2 and 3 in this process are what cause scrypt to be memory hard. To efficiently compute a scrypt hash, all 2,048
+{\sc Salsa20/8} outputs must be saved simultaneously. It is possible to not store all of these values in memory, but it
+would require recomputing all values for each round. Theoretically with a fast enough CPU scrypt can be a CPU-bound
+computation, but it is drastically cheaper and easier to store all intermediate values in memory.
+
+One of the implications of the memory-hard computation is that ASICs (application specific integrated circuits) cannot
+be cheaply or easily designed for computing scrypt hashes. Since the memory overhead is so large any ASIC must be
+attached to some sort of DRAM which increases the physical footprint of the device itself, making it less feasible to
+create such devices.
 
 \subsection{Accumulators}
 A cryptographic accumulator is a form of a one-way function in which members in a set cannot be determined, but it can
@@ -337,6 +478,10 @@ When receiving the money from Alice, Bob requests whichever component he desires
 with a large $k$ it is unlikely that two people receiving the same money from Alice will choose exactly the same
 components for every single piece.
 
+While this style of double-spending prevention can detect double-spending, it does not have the ability to prevent
+double-spending natively. Bitcoin-based cryptocurrencies have the ability to prevent double-spending because of the
+design of the block chain and consensus-based transaction verification.
+
 \section{Cryptocurrency Protocols}
 Cryptocurrency protocols generally consist of three main components: a transaction scheme, a verification scheme, and a
 transaction ledger. The specific details for each of these may vary between protocols, but they typically exhibit the
@@ -429,37 +574,6 @@ The original Bitcoin whitepaper~\cite{nakamoto08} describes the Bitcoin network 
 In other words, all nodes in the network are made aware of new transactions, verified transactions, and accepted blocks.
 In this way the transaction record (block chain) is shared among all nodes in the network.
 
-\subsection{Economics}
-Given that a bitcoin's value derives strictly from how much people are willing to pay for bitcoin, the value is quite
-volatile. At Bitcoin's inception in 2009, BTC had no value whatsoever. Even four years later in January 2013 each BTC
-was worth roughly \$13. However, during 2013 interest in Bitcoin skyrocketed which increased the value by 8000\% to a
-staggering \$1100 per BTC.~\cite{ciaian2014economics} This Bitcoin craze eventually settled down and the price of BTC
-has been slowly falling but tends to stay in the range of \$300 to \$500 per BTC.
-
-Since the Bitcoin economy is so volatile it is very vulnerable to things such as inflation. In late 2014 about 50,000
-of BTC were seized by the U.S. government and subsequently sold in an auction.\cite{reutersgov} The bitcoins ended up
-being sold for a total of \$18.6 million, which was only slightly below the market value. Only one month later, the
-price of BTC sits at around \$250. While it is difficult to draw direct relations between the two events, it is
-certainly reasonable that the sudden sale of 50,000 BTC below market value would affect the market. While this is a
-relatively small seizure of property, larger seizures and auctions could seriously affect the market. Additionally,
-should a government entity have an opposition to Bitcoin, it would not be difficult to directly disrupt the market by
-buying up BTC and deliberately selling at a significantly lower price. Alternatively, direct government statements can
-dramatically impact BTC value. In December 2013, China declared that it does not recognize BTC as a legitimate currency
-and that it has no value. This caused the value of BTC to rapidly decline to nearly half of its value within a few
-weeks.\footnote{\url{http://www.cryptocoincharts.info/pair/btc/usd/btc-e/alltime}}
-
-One of the largest economic concerns for BTC is tax evasion. Real-world cash transactions are taxed by the use of sales
-tax. However, BTC can be spent freely without any taxation. Even if taxation is desired, it is difficult to figure out
-which parties should be paying taxes (is this a purchase for a good, or perhaps just a birthday present to someone?),
-what the tax rate should be (in which country or municipality is the purchase being made). With pure anonymity, none of
-these questions can be answered with certainty. Some economists feel that in the future cryptocurrencies will become a
-tax haven for wealthy individuals to hide their money and avoid paying taxes.\cite{marian2013}
-
-An important observation to note is that these changes in BTC value also cause changes in the value of other
-cryptocurrencies. The value of BTC and LTC tend to show the same change over time.\footnote{\url{http://www.cryptocoincharts.info/pair/btc/usd/okcoin/1-year}}~\footnote{\url{http://www.cryptocoincharts.info/pair/ltc/usd/okcoin/1-year}}
-The implication of this is that drastic market changes in one cryptocurrency are likely to cause similar changes in
-another market, which means that any given cryptocurrency has multiple attack vectors.
-
 \subsection{Litecoin Protocol} Litecoin is the second most widely used cryptocurrency\footnote{\url{http://coinmarketcap.com} -- Accessed 3-18-14, Litecoin has the second highest 24 hour
 trading volume}, and is itself a fork of Bitcoin. Litecoin's first block was mined in October
 2011\footnote{http://ltc.blockr.io/block/info/1}. Litecoin has a few key differences from Bitcoin.  The primary
@@ -503,6 +617,37 @@ improves the speed of solving the problem. This yields the following Litecoin pr
 The network structure of Litecoin, much like the transaction scheme, is virtually identical to that of Bitcoin. The
 network nodes are users connected to the network who receive notifications of new transactions and verified
 transactions.
+
+\subsection{Economics}
+Given that a bitcoin's value derives strictly from how much people are willing to pay for bitcoin, the value is quite
+volatile. At Bitcoin's inception in 2009, BTC had no value whatsoever. Even four years later in January 2013 each BTC
+was worth roughly \$13. However, during 2013 interest in Bitcoin skyrocketed which increased the value by 8000\% to a
+staggering \$1100 per BTC.~\cite{ciaian2014economics} This Bitcoin craze eventually settled down and the price of BTC
+has been slowly falling but tends to stay in the range of \$300 to \$500 per BTC.
+
+Since the Bitcoin economy is so volatile it is very vulnerable to things such as inflation. In late 2014 about 50,000
+of BTC were seized by the U.S. government and subsequently sold in an auction.\cite{reutersgov} The bitcoins ended up
+being sold for a total of \$18.6 million, which was only slightly below the market value. Only one month later, the
+price of BTC sits at around \$250. While it is difficult to draw direct relations between the two events, it is
+certainly reasonable that the sudden sale of 50,000 BTC below market value would affect the market. While this is a
+relatively small seizure of property, larger seizures and auctions could seriously affect the market. Additionally,
+should a government entity have an opposition to Bitcoin, it would not be difficult to directly disrupt the market by
+buying up BTC and deliberately selling at a significantly lower price. Alternatively, direct government statements can
+dramatically impact BTC value. In December 2013, China declared that it does not recognize BTC as a legitimate currency
+and that it has no value. This caused the value of BTC to rapidly decline to nearly half of its value within a few
+weeks.\footnote{\url{http://www.cryptocoincharts.info/pair/btc/usd/btc-e/alltime}}
+
+One of the largest economic concerns for BTC is tax evasion. Real-world cash transactions are taxed by the use of sales
+tax. However, BTC can be spent freely without any taxation. Even if taxation is desired, it is difficult to figure out
+which parties should be paying taxes (is this a purchase for a good, or perhaps just a birthday present to someone?),
+what the tax rate should be (in which country or municipality is the purchase being made). With pure anonymity, none of
+these questions can be answered with certainty. Some economists feel that in the future cryptocurrencies will become a
+tax haven for wealthy individuals to hide their money and avoid paying taxes.\cite{marian2013}
+
+An important observation to note is that these changes in BTC value also cause changes in the value of other
+cryptocurrencies. The value of BTC and LTC tend to show the same change over time.\footnote{\url{http://www.cryptocoincharts.info/pair/btc/usd/okcoin/1-year}}~\footnote{\url{http://www.cryptocoincharts.info/pair/ltc/usd/okcoin/1-year}}
+The implication of this is that drastic market changes in one cryptocurrency are likely to cause similar changes in
+another market, which means that any given cryptocurrency has multiple attack vectors.
 
 \section{Anonymity Characteristics}
 \subsection{Current State of Cryptocurrency Anonymity}
@@ -585,6 +730,31 @@ user from such a service. Even further, we can see all addresses with which the 
 other users involved in illicit activities. This allows the law enforcement agency to analyze these users more closely,
 some of which may have interacted with a Bitcoin exchange, and so on.
 
+\subsubsection{Initial Findings}
+Based on our analysis of the cryptocurrency protocols and with the prior research that has been done in this area, we
+can conclude that the base implementations of these cryptocurrencies do not offer the level of anonymity that is
+typically advertised or desired by users. Since many users would eventually want to convert their bitcoins, litecoins,
+or other coins into real-world currency, they will need to go through an exchange that requires personally identifiable
+information. Alternatively, users could attempt to find someone willing to perform a cash exchange but this is far less
+feasible.
+
+Assuming that a person acquires some amount of bitcoins anonymously, spending the bitcoins anonymously can still be
+difficult. Should a user want to spend their bitcoins at an actual business (since some businesses are now accepting
+bitcoins as currency), they need to be sure that their information does not get leaked. If the user is making a purchase
+online, then some form of information must be exchanged and then a possible attack vector is revealed. If the user makes
+the purchase in an actual store, but then makes a purchase at a different store online, then there is still the same
+risk of data leaking from the first store since all transactions are public. This can be solved by using a different
+address for each store or transaction, but again this just falls back on Nakamoto's initial warnings that the only way
+to remain truly anonymous is to do exactly that. This drastically reduces the usability of the systems, as this is
+equivalent to using a different physical wallet for every cash transaction that a person makes, which is simply not
+feasible.
+
+The Bitcoin protocol was initially introduced to have a decentralized, anonymous, analog to real-world cash
+transactions.  Users on a cryptocurrency network would ideally be able to conveniently exchange their coins without
+having to give up their anonymity and privacy, while also not resorting to having a central authority. With the current
+base implementations of these cryptocurrencies there is currently not support for maintaining pure anonymity without
+expending extra effort to never reuse an address.
+
 \subsection{Litecoin Transaction Graph}
 In order to see if anonymity characteristics are present in other cryptocurrencies, we have performed analysis on the
 Litecoin transaction ledger similar to what \mbox{Meiklejohn} et al.\ performed on the Bitcoin transaction
@@ -665,12 +835,38 @@ Mode group size: 2
 Largest group size: 1,030,616
 \end{verbatim}
 
+The total counts for each entity size can be found in the appendix.
+
 With the largest group utilizing over half of the addresses used, we can draw similar conclusions to what Dorit and
 Shamir determined in the Bitcoin transaction graph. That is to say, the entity to which these addresses belong is likely
 a Litecoin exchange dealing with enormous volumes of transactions as well as personally identifying information about
 users\cite{ron13}. If this is the case, then the same privacy risks exist within Litecoin as in Bitcoin, as any address
 that has ever interacted with this large entity could have their privacy in this entity's hands.  Should the large
 entity/exchange ever become compromised, then so does any user's data that was ever associated with it.
+
+One thing worth noting is the comparison between the entity graph generated by the Litecoin transaction graph and
+randomly generated graphs following the Erd\H{o}s-R\'{e}nyi model.\cite{erdos1959random} Given a $G(n, p)$ graph with
+$n$ vertices and any edge having probability $p$, the graph has the following attributes:
+\begin{itemize}
+    \item If $np < 1$, then the size of any connected component is likely to be at most $O(log(n))$
+    \item If $np = 1$, then there will likely be a large connected component whose size is $O(n^{2/3})$
+    \item If $np > 1$, then there will likely be a unique giant component with a majority of the vertices, and there is
+        unlikely to be any other component larger than $O(log(n))$.
+    \item If $p < \frac{(1 - e) ln(n)}{n}$, then the graph is likely to be disconnected.
+    \item If $p > \frac{(1 + e) ln(n)}{n}$, then the graph is likely to be connected.
+\end{itemize}
+
+Initially, the results of the experiment seemed to possibly reflect some of these properties. There certainly is one
+unique giant component in the graph, and most components tend to be small. However, upon closer examination this is
+about where the similarities end. With 4,143,572 transactions and an average of 2.57 inputs per transaction, this means
+that there are approximately 10,648,980 edges in our entity graph. While this does not account for multi-edges,
+multi-edges were rare enough that it should not significantly affect the number. With n = 1,718,624 distinct addresses
+there are $\frac{n(n-1)}{2} = \frac{1,718,624(1,718,623)}{2} = 1,477,005,234,726$ possible edges in the graph. This
+means that any given edge has probability $p = \frac{10,648,980}{1,477,005,234,726}$ of existing in the graph. We can
+compute $np = 1,718,624 \cdot \frac{10,648,980}{1,477,005,234,726} = 12.39$. Indeed, this is the case in which there
+should be a unique giant component with the majority of the vertices, and there is unlikely to be any component larger
+than $O(log(n)) = O(log(1,718,624)) = O(6.24)$. However, this is absolutely not true of our graph, as there are several
+hundred components much larger than this size.
 
 \section{Improving Anonymity}
 There have been many attempts to resolve the anonymity issues present in the Bitcoin protocol. Some of these attempts
@@ -816,6 +1012,13 @@ $\kappa_{esc}$ are returned to Alice, signed by the mixing service. This allows 
 that the mixing service has stolen her funds in the event of theft, or in the case that the funds have not been
 delivered to $\kappa_{out}$ by $t_2$.
 
+As part of the Mixcoin protocol the authors suggest that a randomized mixing fee be paid to the service by the users.
+The proposed method of randomized mixing fees is to establish some probability $\rho$ where the entire value may be
+taken as a fee, and probability $(1 - \rho)$ that there is no fee at all. The means of randomly choosing the fee each
+item is to be made publicly verifiable so that the mixer can be audited if necessary to ensure that it is not behaving
+maliciously. The authors believe that by having this randomized mixing fee there is extra incentive to operate honestly
+and thus provide a better, low-risk service to the users.
+
 While Mixcoin resolves one of the issues with mixing services it does not solve every issue. The mixing service
 still effectively behaves as a bank between users, which violates the goal of decentralized electronic cash.
 Additionally, Mixcoin states that all records of a mix occurring should be deleted once the mix is completed. If
@@ -825,7 +1028,7 @@ needs to trust the service with her information. This means that even if Mixcoin
 may be some degree of traceability in the system.
 
 \subsection{Stealth Addresses}
-In 2014 a feature called \emph{stealth addresses} were added to a Bitcoin utility library called
+In 2014 a feature called \emph{stealth addresses} was added to a Bitcoin utility library called
 \texttt{sx}.\footnote{\url{https://github.com/spesmilo/sx}} Stealth addresses are described as ``a powerful tool for
 allowing one to accept Bitcoins using a public Bitcoin address while preventing passive observers from knowing your
 transaction history.''\cite{stealth}
@@ -847,7 +1050,505 @@ anonymity.\cite{nakamoto08} The only difference here is that the \emph{payer} ge
 the \emph{payee}. This process still does not allow for a user to remain purely anonymous without needing to use a new
 address for every transaction.
 
+\section{Conclusion and Future Work}
+\subsection{Conclusion}
+Bitcoin was initially introduced to provide a direct digital equivalent to cash transactions. This means that any
+transactions made on the Bitcoin network should be anonymous, convenient, and not require a central authority to sign
+off on the transaction. Based on the research that we have performed, as well as the research aggregated from other
+sources, we have determined that it is not possible to remain truly anonymous on the Bitcoin or Litecoin networks
+without giving up either convenience or decentralization. 
+
+The most promising method for maintaining anonymity is by being careful and never reusing an address for any purpose.
+This drastically increases the amount of work required to perform a transaction and makes the protocol significantly
+more inconvenient. As stated previously, this method of maintaining anonymity is equivalent to storing the cash received
+from every real-world transaction in its own wallet or bank account, and only ever spending from one wallet or bank
+account at a time. This clearly is not feasible in the real world, so using this method of maintaining privacy pushes
+cryptocurrencies further from being equivalent to cash.
+
+Other promising methods of maintaining anonymity involve using some sort of service. There exist mixer services which
+allow users to launder their coins through a central store such that the inputs and outputs cannot be tied to each
+other. These work well in theory, but this requires users to trust the service with their currency. In many cases, these
+services were caught simply stealing users' currency. There are some proposals to improve these systems, such as
+Mixcoin, but rather than preventing the initial problem they simply provide some proof that a problem occurred. However,
+the biggest problem with these mixing services is that they violate the concept of decentralization present in
+cryptocurrency protocols.
+
+In our opinion the most likely method to succeed in improving anonymity is Zerocoin. Zerocoin utilizes distributed
+accumulators in order to allow users to anonymously deposit and withdraw coins. This acts similarly to a mixer, but
+since there is no central authority that must be trusted the system is more secure for the users. The main issue with
+Zerocoin seems to be performance. We have analyzed these concerns and determined that the performance is quite slow in
+the worst case, and would only get worse as the system gets more widely adopted and the cryptocurrency sees larger
+trading volume. We addressed these concerns by proposing our own solution. Rather than using accumulators based on
+3,072-bit RSA keys, we can use 256-bit ECC accumulators and get performance increases on the order of 100x speed
+improvement.
+
+As it stands right now, the base implementations of cryptocurrencies do not offer sufficient identity protection and
+proposals to solve this problem fall flat. The potential solutions we have seen are either unusable, risky, insecure, or
+computationally infeasible. As a result of all of this, we do not feel that true anonymity is something that can be
+achieved within Bitcoin-based cryptocurrency protocols.
+
+\subsection{Future Work}
+In the future we would like to investigate the usage of SHA-3 as a hashing algorithm in cryptocurrencies. There are
+already cryptocurrencies using SHA-3, such as MaxCoin\footnote{\url{http://www.maxcoin.co.uk/}} and Slothcoin, but these
+are not nearly as widely used as Bitcoin or Litecoin. Since SHA-3 does not necessarily add any privacy or security
+improvements over SHA-256, this investigation would be based purely on performance. However, it is worth researching
+since sponge constructions are such recent developments and it is possible that some discoveries may be made which make
+sponge constructions more desirable for anonymity.
+
+Continued analysis on transaction graphs relative to random graph models is something worth exploring further. We
+currently only compared our analysis of the entity graph to random models, but it is possible that the pure transaction
+graph of one or more cryptocurrencies more closely relates to randomly generated graphs. If any correlation is found,
+investigating how transaction volume affects similarity is another possibility.
+
+Finally, we plan to analyze any new developments that are made in this area. With interest in cryptocurrencies and
+maintaining of anonymity and privacy there will surely be new ideas and proposals made to make it easier to remain
+anonymous on the cryptocurrency networks. There are new products being introduced frequently, such as
+DarkWallet\footnote{\url{http://www.darkwallet.is/}}, which promise anonymity, ease of use, and security. We would like
+to perform proper analysis and potentially audit any provided code to see if there is a risk of information leakage.
+
 \bibliographystyle{acm}
 \bibliography{references}
+
+\newgeometry{left=1in,right=1in}
+\section{Appendix}
+\subsection{Source Code}
+\lstinputlisting[language=Python]{code/inputs.py}
+\lstinputlisting[language=Python]{code/groupHashes.py}
+\lstinputlisting[language=bash]{code/getHashes.sh}
+\lstinputlisting[language=C++]{code/bench.h}
+\lstinputlisting[language=C++]{code/bench.cpp}
+
+\subsection{Litecoin Component Sizes}
+\begin{center}
+\begin{supertabular}{|p{.2\textwidth}|p{.2\textwidth}|p{.2\textwidth}|p{.2\textwidth}|}
+    \hline
+    Entity Size & Number of Entities & Entity Size & Number of Entities \\
+    \hline
+    2 & 155767 & 3 & 62113 \\
+    \hline
+    4 & 30695 & 5 & 17663 \\
+    \hline
+    6 & 10360 & 7 & 5176 \\
+    \hline
+    8 & 3490 & 9 & 2521 \\
+    \hline
+    10 & 1121 & 11 & 918 \\
+    \hline
+    12 & 1269 & 13 & 979 \\
+    \hline
+    14 & 783 & 15 & 633 \\
+    \hline
+    16 & 491 & 17 & 478 \\
+    \hline
+    18 & 349 & 19 & 346 \\
+    \hline
+    20 & 434 & 21 & 433 \\
+    \hline
+    22 & 285 & 23 & 227 \\
+    \hline
+    24 & 315 & 25 & 170 \\
+    \hline
+    26 & 163 & 27 & 157 \\
+    \hline
+    28 & 139 & 29 & 111 \\
+    \hline
+    30 & 113 & 31 & 107 \\
+    \hline
+    32 & 93 & 33 & 89 \\
+    \hline
+    34 & 88 & 35 & 80 \\
+    \hline
+    36 & 79 & 37 & 59 \\
+    \hline
+    38 & 65 & 39 & 55 \\
+    \hline
+    40 & 72 & 41 & 63 \\
+    \hline
+    42 & 52 & 43 & 43 \\
+    \hline
+    44 & 39 & 45 & 49 \\
+    \hline
+    46 & 44 & 47 & 29 \\
+    \hline
+    48 & 28 & 49 & 35 \\
+    \hline
+    50 & 40 & 51 & 33 \\
+    \hline
+    52 & 24 & 53 & 30 \\
+    \hline
+    54 & 33 & 55 & 17 \\
+    \hline
+    56 & 20 & 57 & 21 \\
+    \hline
+    58 & 17 & 59 & 27 \\
+    \hline
+    60 & 35 & 61 & 17 \\
+    \hline
+    62 & 22 & 63 & 19 \\
+    \hline
+    64 & 22 & 65 & 16 \\
+    \hline
+    66 & 12 & 67 & 21 \\
+    \hline
+    68 & 15 & 69 & 16 \\
+    \hline
+    70 & 15 & 71 & 19 \\
+    \hline
+    72 & 6 & 73 & 13 \\
+    \hline
+    74 & 14 & 75 & 8 \\
+    \hline
+    76 & 12 & 77 & 12 \\
+    \hline
+    78 & 14 & 79 & 10 \\
+    \hline
+    80 & 23 & 81 & 17 \\
+    \hline
+    82 & 9 & 83 & 11 \\
+    \hline
+    84 & 12 & 85 & 12 \\
+    \hline
+    86 & 8 & 87 & 3 \\
+    \hline
+    88 & 8 & 89 & 9 \\
+    \hline
+    90 & 4 & 91 & 5 \\
+    \hline
+    92 & 7 & 93 & 7 \\
+    \hline
+    94 & 7 & 95 & 7 \\
+    \hline
+    96 & 8 & 97 & 5 \\
+    \hline
+    98 & 3 & 99 & 8 \\
+    \hline
+    100 & 6 & 101 & 8 \\
+    \hline
+    102 & 8 & 103 & 8 \\
+    \hline
+    104 & 6 & 105 & 8 \\
+    \hline
+    106 & 8 & 107 & 3 \\
+    \hline
+    108 & 8 & 109 & 7 \\
+    \hline
+    110 & 6 & 111 & 2 \\
+    \hline
+    112 & 7 & 113 & 1 \\
+    \hline
+    114 & 4 & 115 & 5 \\
+    \hline
+    116 & 4 & 117 & 1 \\
+    \hline
+    118 & 1 & 120 & 2 \\
+    \hline
+    121 & 5 & 122 & 3 \\
+    \hline
+    123 & 4 & 125 & 2 \\
+    \hline
+    126 & 7 & 127 & 9 \\
+    \hline
+    128 & 4 & 129 & 4 \\
+    \hline
+    130 & 2 & 131 & 3 \\
+    \hline
+    132 & 3 & 133 & 4 \\
+    \hline
+    134 & 2 & 136 & 7 \\
+    \hline
+    137 & 5 & 138 & 1 \\
+    \hline
+    139 & 4 & 140 & 3 \\
+    \hline
+    141 & 2 & 142 & 4 \\
+    \hline
+    143 & 4 & 144 & 5 \\
+    \hline
+    145 & 3 & 147 & 4 \\
+    \hline
+    149 & 1 & 150 & 5 \\
+    \hline
+    151 & 4 & 152 & 2 \\
+    \hline
+    153 & 3 & 154 & 3 \\
+    \hline
+    155 & 5 & 156 & 3 \\
+    \hline
+    157 & 3 & 158 & 1 \\
+    \hline
+    159 & 3 & 160 & 2 \\
+    \hline
+    161 & 2 & 162 & 3 \\
+    \hline
+    163 & 3 & 164 & 3 \\
+    \hline
+    166 & 2 & 168 & 1 \\
+    \hline
+    169 & 1 & 170 & 2 \\
+    \hline
+    171 & 3 & 172 & 4 \\
+    \hline
+    174 & 3 & 175 & 5 \\
+    \hline
+    176 & 3 & 180 & 3 \\
+    \hline
+    182 & 2 & 183 & 3 \\
+    \hline
+    184 & 1 & 185 & 2 \\
+    \hline
+    186 & 3 & 187 & 2 \\
+    \hline
+    190 & 1 & 191 & 4 \\
+    \hline
+    195 & 1 & 196 & 1 \\
+    \hline
+    197 & 1 & 198 & 2 \\
+    \hline
+    200 & 11 & 201 & 9 \\
+    \hline
+    203 & 4 & 204 & 1 \\
+    \hline
+    206 & 2 & 207 & 1 \\
+    \hline
+    208 & 1 & 209 & 1 \\
+    \hline
+    210 & 4 & 211 & 1 \\
+    \hline
+    212 & 2 & 213 & 1 \\
+    \hline
+    214 & 2 & 215 & 2 \\
+    \hline
+    216 & 2 & 217 & 1 \\
+    \hline
+    219 & 2 & 220 & 1 \\
+    \hline
+    221 & 1 & 222 & 3 \\
+    \hline
+    224 & 2 & 226 & 2 \\
+    \hline
+    227 & 1 & 229 & 1 \\
+    \hline
+    230 & 2 & 231 & 1 \\
+    \hline
+    232 & 2 & 234 & 1 \\
+    \hline
+    235 & 2 & 236 & 1 \\
+    \hline
+    238 & 3 & 239 & 3 \\
+    \hline
+    240 & 2 & 243 & 1 \\
+    \hline
+    244 & 1 & 248 & 1 \\
+    \hline
+    249 & 1 & 252 & 1 \\
+    \hline
+    254 & 1 & 256 & 1 \\
+    \hline
+    260 & 1 & 261 & 1 \\
+    \hline
+    262 & 1 & 266 & 1 \\
+    \hline
+    267 & 2 & 270 & 1 \\
+    \hline
+    271 & 2 & 272 & 1 \\
+    \hline
+    273 & 4 & 274 & 1 \\
+    \hline
+    275 & 2 & 276 & 1 \\
+    \hline
+    277 & 2 & 278 & 1 \\
+    \hline
+    282 & 1 & 284 & 2 \\
+    \hline
+    285 & 1 & 286 & 1 \\
+    \hline
+    287 & 1 & 288 & 1 \\
+    \hline
+    289 & 1 & 290 & 1 \\
+    \hline
+    291 & 1 & 294 & 1 \\
+    \hline
+    295 & 2 & 297 & 1 \\
+    \hline
+    299 & 1 & 302 & 1 \\
+    \hline
+    305 & 1 & 308 & 1 \\
+    \hline
+    309 & 1 & 311 & 1 \\
+    \hline
+    313 & 1 & 315 & 1 \\
+    \hline
+    318 & 1 & 319 & 3 \\
+    \hline
+    323 & 1 & 326 & 1 \\
+    \hline
+    327 & 1 & 329 & 1 \\
+    \hline
+    332 & 1 & 343 & 1 \\
+    \hline
+    345 & 1 & 347 & 1 \\
+    \hline
+    349 & 2 & 351 & 1 \\
+    \hline
+    352 & 1 & 355 & 1 \\
+    \hline
+    356 & 1 & 362 & 1 \\
+    \hline
+    364 & 2 & 366 & 1 \\
+    \hline
+    368 & 1 & 373 & 1 \\
+    \hline
+    376 & 1 & 377 & 2 \\
+    \hline
+    381 & 1 & 384 & 1 \\
+    \hline
+    385 & 1 & 389 & 1 \\
+    \hline
+    392 & 1 & 393 & 1 \\
+    \hline
+    394 & 1 & 399 & 2 \\
+    \hline
+    401 & 1 & 408 & 2 \\
+    \hline
+    416 & 1 & 418 & 1 \\
+    \hline
+    419 & 1 & 420 & 1 \\
+    \hline
+    423 & 1 & 425 & 1 \\
+    \hline
+    428 & 1 & 429 & 2 \\
+    \hline
+    434 & 1 & 435 & 1 \\
+    \hline
+    450 & 2 & 456 & 1 \\
+    \hline
+    457 & 1 & 459 & 1 \\
+    \hline
+    470 & 1 & 471 & 2 \\
+    \hline
+    473 & 2 & 474 & 1 \\
+    \hline
+    481 & 1 & 485 & 1 \\
+    \hline
+    486 & 1 & 487 & 1 \\
+    \hline
+    491 & 1 & 493 & 1 \\
+    \hline
+    495 & 1 & 496 & 1 \\
+    \hline
+    497 & 1 & 500 & 1 \\
+    \hline
+    505 & 1 & 509 & 1 \\
+    \hline
+    510 & 1 & 522 & 1 \\
+    \hline
+    534 & 1 & 540 & 1 \\
+    \hline
+    554 & 1 & 555 & 1 \\
+    \hline
+    558 & 1 & 561 & 1 \\
+    \hline
+    564 & 1 & 566 & 2 \\
+    \hline
+    585 & 1 & 589 & 1 \\
+    \hline
+    593 & 2 & 600 & 1 \\
+    \hline
+    611 & 1 & 614 & 1 \\
+    \hline
+    672 & 1 & 683 & 1 \\
+    \hline
+    687 & 1 & 690 & 1 \\
+    \hline
+    693 & 1 & 696 & 1 \\
+    \hline
+    698 & 1 & 708 & 1 \\
+    \hline
+    714 & 1 & 719 & 1 \\
+    \hline
+    729 & 1 & 734 & 1 \\
+    \hline
+    750 & 1 & 762 & 1 \\
+    \hline
+    778 & 1 & 799 & 1 \\
+    \hline
+    803 & 1 & 862 & 1 \\
+    \hline
+    882 & 1 & 901 & 1 \\
+    \hline
+    918 & 1 & 925 & 1 \\
+    \hline
+    942 & 1 & 955 & 1 \\
+    \hline
+    969 & 1 & 982 & 1 \\
+    \hline
+    994 & 1 & 998 & 1 \\
+    \hline
+    1007 & 1 & 1011 & 1 \\
+    \hline
+    1059 & 1 & 1076 & 1 \\
+    \hline
+    1140 & 1 & 1178 & 1 \\
+    \hline
+    1181 & 1 & 1208 & 1 \\
+    \hline
+    1212 & 1 & 1219 & 1 \\
+    \hline
+    1246 & 1 & 1251 & 1 \\
+    \hline
+    1253 & 1 & 1265 & 1 \\
+    \hline
+    1266 & 1 & 1275 & 1 \\
+    \hline
+    1299 & 1 & 1328 & 1 \\
+    \hline
+    1351 & 1 & 1431 & 1 \\
+    \hline
+    1477 & 1 & 1508 & 1 \\
+    \hline
+    1695 & 1 & 1729 & 1 \\
+    \hline
+    1760 & 1 & 1862 & 1 \\
+    \hline
+    1901 & 1 & 1906 & 1 \\
+    \hline
+    1938 & 1 & 2129 & 1 \\
+    \hline
+    2297 & 1 & 2482 & 1 \\
+    \hline
+    2508 & 1 & 2694 & 1 \\
+    \hline
+    2829 & 1 & 3110 & 1 \\
+    \hline
+    3199 & 1 & 3281 & 1 \\
+    \hline
+    3865 & 1 & 4350 & 1 \\
+    \hline
+    4353 & 1 & 4413 & 1 \\
+    \hline
+    4496 & 1 & 4920 & 1 \\
+    \hline
+    5002 & 1 & 5043 & 1 \\
+    \hline
+    5367 & 1 & 5748 & 1 \\
+    \hline
+    5886 & 1 & 8033 & 1 \\
+    \hline
+    8214 & 1 & 9042 & 1 \\
+    \hline
+    9659 & 1 & 10272 & 1 \\
+    \hline
+    12536 & 1 & 12871 & 1 \\
+    \hline
+    14797 & 1 & 15537 & 1 \\
+    \hline
+    16759 & 1 & 28815 & 1 \\
+    \hline
+    36298 & 1 & 53022 & 1 \\
+    \hline
+    1030616 & 1 & & \\
+    \hline
+\end{supertabular}
+\end{center}
 
 \end{document}

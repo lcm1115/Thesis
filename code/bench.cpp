@@ -149,6 +149,8 @@ int main(int argc, char** argv) {
     mpz_init(value);
     time_point<system_clock> start, end;
     double rsa_seconds, ecc_seconds;
+
+    // Accumulate 'num_values' values using RSA accumulator.
     start = system_clock::now();
     for (int i = 0; i < num_values; ++i) {
         mpz_urandomb(value, rand, 3072);
@@ -157,15 +159,22 @@ int main(int argc, char** argv) {
     end = system_clock::now();
     rsa_seconds = duration_cast<milliseconds>(end - start).count();
     rsa_seconds /= 1000;
+
+    // Initialize ECC accumulator variables.
     mpz_t a;
     mpz_t point[2], eccwitness[2];
     mpz_init(eccwitness[0]);
     mpz_init(eccwitness[1]);
     mpz_init_set_si(a, -3);
-    mpz_init_set_str(point[0], "6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296", 16);
-    mpz_init_set_str(point[1], "4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5", 16);
-    mpz_set_str(modulus, "115792089210356248762697446949407573530086143415290314195533631308867097853951", 10);
+    mpz_init_set_str(point[0],
+            "6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296", 16);
+    mpz_init_set_str(point[1],
+            "4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5", 16);
+    mpz_set_str(modulus, "115792089210356248762697446949407573530"
+                         "086143415290314195533631308867097853951", 10);
     ECCAccumulator ecc(a, point, modulus);
+
+    // Accumulate 'num_values' values using ECC accumulator.
     start = system_clock::now();
     for (int i = 0; i < num_values; ++i) {
         mpz_urandomb(value, rand, 256);
@@ -174,6 +183,8 @@ int main(int argc, char** argv) {
     end = system_clock::now();
     ecc_seconds = duration_cast<milliseconds>(end - start).count();
     ecc_seconds /= 1000;
+
+    // Output results.
     cout << "Accumulated " << num_values << " values" << endl;
     cout << "RSA time: " << rsa_seconds << "s" << endl;
     cout << "ECC time: " << ecc_seconds << "s" << endl;
