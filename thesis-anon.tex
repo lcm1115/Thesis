@@ -1,6 +1,12 @@
 \documentclass[11pt]{article}
 
 \newcommand{\Moser}{M{\"o}ser}
+\newlength{\blackoutwidth}
+\newcommand{\blackout}[1]
+{%necessary comment
+    \settowidth{\blackoutwidth}{#1}%necessary comment
+    \rule[-0.3em]{\blackoutwidth}{1.125em}%necessary comment
+}
 
 \usepackage{algorithm2e}
 \usepackage{amssymb}
@@ -44,18 +50,18 @@
     \vspace{4em}
     {\huge Anonymity Analysis of Cryptocurrencies} \\
     \vspace{3em}
-    {\LARGE Liam Morris} \\
-    {\tt lcm1115@rit.edu} \\
+    {\LARGE \blackout{Liam Morris}} \\
+    {\tt \blackout{lcm1115@rit.edu}} \\
     \vspace{3em}
     \begin{adjustwidth}{.5in}{.5in}
-        Chair: Professor Stanis{\l}aw Radziszowski \hfill {\tt spr@cs.rit.edu} \\
+        Chair: \blackout{Professor Stanis{\l}aw Radziszowski} \hfill {\tt \blackout{spr@cs.rit.edu}} \\
         \vspace{2em}
         \hrulefill \\
         \vspace{3em}
-        Reader: Professor Warren Carithers \hfill {\tt wrc@cs.rit.edu} \\
+        Reader: \blackout{Professor Warren Carithers} \hfill {\tt \blackout{wrc@cs.rit.edu}} \\
         \vspace{2em}
         \hrulefill \\
-        \vspace{3em} Observer: Professor Bo Yuan \hfill {\tt bo.yuan@rit.edu} \\
+        \vspace{3em} Observer: \blackout{Professor Bo Yuan} \hfill {\tt \blackout{bo.yuan@rit.edu}} \\
         \vspace{2em}
         \hrulefill
     \end{adjustwidth}
